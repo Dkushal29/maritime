@@ -1,0 +1,6 @@
+route_id,origin,destination,distance_nm,transit_days,average_freight,port_congestion,risk,landed_cost
+R001,Australia,Visakhapatnam,4820,16.5,31.8,Medium,MEDIUM,142.8
+R002,Australia,Paradip,5040,17.2,30.9,Low,LOW,141.2
+R003,Australia,Chennai,4580,15.8,32.4,Low,LOW,143.5
+R004,Indonesia,Visakhapatnam,2150,8.2,20.4,High,HIGH,118.6
+R005,Indonesia,Paradip,2320,8.8,19.8,Medium,MEDIUM,117.5

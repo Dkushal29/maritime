@@ -1,44 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: 11 17 32;
+  --background: 6 21 37;
   --foreground: 248 250 252;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
   color: rgb(var(--foreground));
-  background: #0B1120;
+  background-color: #061525;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbars for trading floor density */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B1120;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 3px;
+  background: rgba(22, 131, 255, 0.2);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: rgba(22, 131, 255, 0.4);
 }
 
-/* Recharts styling overrides for dark theme */
+/* Hide scrollbar by default, show on hover */
+.scroll-hidden {
+  scrollbar-width: none;
+}
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+.scroll-hidden:hover {
+  scrollbar-width: thin;
+}
+.scroll-hidden:hover::-webkit-scrollbar {
+  display: block;
+}
+
+/* Glass panel effects */
+.glass {
+  background: rgba(11, 31, 54, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(22, 131, 255, 0.12);
+}
+
+.glass-bright {
+  background: rgba(18, 59, 103, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+}
+
+/* Glow effects */
+.glow-electric { box-shadow: 0 0 20px rgba(22, 131, 255, 0.3); }
+.glow-cyan { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
+.glow-success { box-shadow: 0 0 16px rgba(16, 185, 129, 0.3); }
+
+/* Route line animation */
+@keyframes dash {
+  to { stroke-dashoffset: -20; }
+}
+.route-animated {
+  animation: dash 1.5s linear infinite;
+}
+
+/* Pulse for port nodes */
+@keyframes port-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
+.port-pulse {
+  animation: port-pulse 2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* AI processing animation */
+@keyframes ai-scan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.ai-gradient {
+  background: linear-gradient(135deg, #1683FF, #22D3EE, #8B5CF6, #1683FF);
+  background-size: 300% 300%;
+  animation: ai-scan 3s ease infinite;
+}
+
+/* Blinking cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.blink { animation: blink 1s step-end infinite; }
+
+/* Shimmer for loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(22,131,255,0.1) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Sidebar vessel texture */
+.sidebar-texture {
+  background-image:
+    radial-gradient(ellipse at 20% 80%, rgba(22, 131, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+}
+
+/* Recharts overrides for dark command center */
+.recharts-tooltip-wrapper { outline: none !important; }
 .recharts-default-tooltip {
-  background-color: #131C31 !important;
-  border: 1px solid #1E293B !important;
+  background: rgba(11, 31, 54, 0.95) !important;
+  border: 1px solid rgba(22, 131, 255, 0.25) !important;
   border-radius: 8px !important;
   color: #F8FAFC !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+}
+.recharts-cartesian-grid-line {
+  stroke: rgba(22, 131, 255, 0.08) !important;
 }
 
-.recharts-cartesian-grid-line {
-  stroke: #1E293B !important;
+/* Number display */
+.font-mono-data {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Slider custom styling */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(22, 131, 255, 0.2);
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1683FF;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(22, 131, 255, 0.5);
+}
+input[type=range]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1683FF;
+  cursor: pointer;
+  border: none;
+}
+
+/* Gradient overlays for hero cards */
+.hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 21, 37, 0.2) 0%,
+    rgba(6, 21, 37, 0.5) 50%,
+    rgba(6, 21, 37, 0.9) 100%
+  );
+}
+
+.hero-overlay-left {
+  background: linear-gradient(
+    to right,
+    rgba(6, 21, 37, 0.95) 0%,
+    rgba(6, 21, 37, 0.7) 50%,
+    rgba(6, 21, 37, 0.1) 100%
+  );
 }

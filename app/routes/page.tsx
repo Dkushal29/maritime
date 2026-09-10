@@ -1,248 +1,220 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import GlobalFilterBar from '@/components/GlobalFilterBar';
-import { Compass, MapPin, Ship, Info, Award, ArrowRight, ShieldCheck } from 'lucide-react';
 import { getRouteAnalytics } from '@/lib/api';
 import { RouteMetric } from '@/types';
-import { formatCurrency } from '@/lib/utils';
+import { RouteMap } from '@/components/maritime/RouteMap';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function RoutesPage() {
   const [routes, setRoutes] = useState<RouteMetric[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<RouteMetric | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getRouteAnalytics().then((res) => {
-      setRoutes(res);
-      if (res.length > 0) setSelectedRoute(res[0]);
-    });
+    setIsLoading(true);
+    getRouteAnalytics()
+      .then((res) => {
+        setRoutes(res);
+        if (res.length > 0) setSelectedRoute(res[0]);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error('Route API error:', err);
+        setIsLoading(false);
+      });
   }, []);
+
+  const chartData = routes.map((r) => ({
+    route: `${r.origin.slice(0, 3)}→${r.destination.slice(0, 3)}`,
+    freight: r.avgFreightRate,
+    score: r.isRecommended ? 94 : r.riskLevel === 'LOW' ? 89 : r.riskLevel === 'MEDIUM' ? 78 : 65,
+  }));
 
   return (
     <div className="space-y-6">
-      <GlobalFilterBar />
-
-      {/* Map Visualization Box */}
-      <div className="p-5 bg-[#131C31] border border-[#1E293B] rounded-xl shadow-md space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-base font-bold text-slate-100">
-              Interactive Shipping Lanes &amp; Port Congestion Map
-            </h2>
-          </div>
-          <span className="text-xs font-mono text-slate-400">Indo-Pacific &amp; East Coast India Corridor</span>
+      {/* Header */}
+      <div>
+        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
+          ◆ ROUTE INTELLIGENCE & CORRIDORS
         </div>
-
-        {/* Stylized SVG Map Container */}
-        <div className="relative w-full h-80 bg-[#070C18] border border-[#1E293B] rounded-xl overflow-hidden flex items-center justify-center p-4">
-          <svg className="w-full h-full" viewBox="0 0 800 400" fill="none">
-            {/* Grid Lines */}
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E293B" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-
-            {/* Coastline Stylized Shapes */}
-            {/* India shape */}
-            <path
-              d="M 220 100 L 260 120 L 250 220 L 220 280 L 190 200 Z"
-              fill="#131C31"
-              stroke="#334155"
-              strokeWidth="1.5"
-            />
-            {/* Australia shape */}
-            <path
-              d="M 520 250 L 680 240 L 720 340 L 560 360 Z"
-              fill="#131C31"
-              stroke="#334155"
-              strokeWidth="1.5"
-            />
-            {/* Indonesia archipelago */}
-            <path
-              d="M 380 210 L 480 220 L 460 240 L 370 225 Z"
-              fill="#131C31"
-              stroke="#334155"
-              strokeWidth="1.5"
-            />
-
-            {/* Shipping Lanes (Curved Animated Paths) */}
-            {/* Australia -> Visakhapatnam */}
-            <path
-              d="M 580 260 Q 420 180 245 190"
-              fill="none"
-              stroke="#06B6D4"
-              strokeWidth="2.5"
-              strokeDasharray="6 4"
-              className="animate-pulse"
-            />
-            {/* Australia -> Paradip */}
-            <path
-              d="M 580 260 Q 430 160 255 160"
-              fill="none"
-              stroke="#10B981"
-              strokeWidth="2"
-              strokeDasharray="4 4"
-            />
-            {/* Indonesia -> Paradip */}
-            <path
-              d="M 410 215 Q 330 180 255 160"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="2"
-              strokeDasharray="4 4"
-            />
-
-            {/* Port Markers */}
-            {/* Visakhapatnam */}
-            <g transform="translate(245, 190)" className="cursor-pointer">
-              <circle r="6" fill="#06B6D4" className="animate-ping opacity-75" />
-              <circle r="4" fill="#06B6D4" />
-              <text x="10" y="4" fill="#F8FAFC" fontSize="11" fontFamily="mono" fontWeight="bold">
-                Visakhapatnam
-              </text>
-            </g>
-
-            {/* Paradip */}
-            <g transform="translate(255, 160)" className="cursor-pointer">
-              <circle r="4" fill="#10B981" />
-              <text x="10" y="4" fill="#F8FAFC" fontSize="11" fontFamily="mono" fontWeight="bold">
-                Paradip
-              </text>
-            </g>
-
-            {/* Chennai */}
-            <g transform="translate(235, 230)" className="cursor-pointer">
-              <circle r="4" fill="#EF4444" />
-              <text x="10" y="4" fill="#F8FAFC" fontSize="10" fontFamily="mono">
-                Chennai
-              </text>
-            </g>
-
-            {/* Australia Ports (Newcastle / Gladstone) */}
-            <g transform="translate(580, 260)">
-              <circle r="5" fill="#818CF8" />
-              <text x="10" y="4" fill="#F8FAFC" fontSize="11" fontFamily="mono" fontWeight="bold">
-                Australia (Newcastle)
-              </text>
-            </g>
-
-            {/* Vessel Pin Markers along the line */}
-            <g transform="translate(420, 215)">
-              <circle r="3" fill="#FBBF24" />
-              <text x="6" y="-6" fill="#FBBF24" fontSize="9" fontFamily="mono">MV Ocean Star (18 Sep)</text>
-            </g>
-          </svg>
-
-          {/* Map Floating Legend Overlay */}
-          <div className="absolute bottom-3 left-3 p-3 rounded-lg bg-[#0B1120]/90 border border-[#1E293B] text-[10px] font-mono space-y-1 backdrop-blur-md">
-            <span className="font-bold text-slate-200 block uppercase">Lane Legend</span>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-0.5 bg-cyan-400 inline-block" /> Australia → Visakhapatnam ($31.8/MT)
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-0.5 bg-emerald-400 inline-block" /> Australia → Paradip ($30.9/MT)
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-0.5 bg-blue-400 inline-block" /> Indonesia → Paradip ($19.4/MT)
-            </div>
-          </div>
-        </div>
-
-        {/* AI Route Recommendation Line */}
-        <div className="p-3 rounded-lg bg-[#0B1120] border border-emerald-500/30 text-xs text-slate-300 flex items-start gap-2">
-          <Award className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            <span className="font-bold text-emerald-400">AI Route Recommendation: </span>
-            Paradip discharge port currently offers the lowest expected landed cost ($141.2/MT) for coal imports due to minimal berth congestion compared to Visakhapatnam.
-          </p>
-        </div>
+        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
+          Route Analytics & Major Maritime Corridors
+        </h1>
+        <p className="text-xs text-slate-400 mt-1">
+          AI-ranked shipping routes for bulk cargo delivery to India East Coast ports
+        </p>
       </div>
 
-      {/* Route Comparison Table */}
-      <div className="p-5 bg-[#131C31] border border-[#1E293B] rounded-xl shadow-md space-y-4">
-        <h3 className="text-sm font-bold text-slate-100 uppercase font-mono">
-          Route Metric Comparison Directory
-        </h3>
+      {/* Global Interactive Route Corridor Map */}
+      <div className="glass rounded-xl p-5 border border-electric/15">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-[10px] text-cyan font-mono tracking-wider uppercase mb-0.5 font-bold">
+              ◆ CORRIDOR MAPPING
+            </div>
+            <h3 className="font-display font-bold text-base text-slate-100 m-0">
+              Indo-Pacific to East Coast India Shipping Lanes
+            </h3>
+          </div>
+          <span className="text-xs font-mono text-slate-400">
+            Selected: <strong className="text-cyan">{selectedRoute ? `${selectedRoute.origin} → ${selectedRoute.destination}` : 'Australia → Visakhapatnam'}</strong>
+          </span>
+        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-sans">
-            <thead>
-              <tr className="border-b border-[#1E293B] text-slate-400 text-[10px] font-mono uppercase">
-                <th className="py-2.5 px-3">Route (Origin → Dest)</th>
-                <th className="py-2.5 px-3">Avg Freight Rate</th>
-                <th className="py-2.5 px-3">Transit Time</th>
-                <th className="py-2.5 px-3">Port Congestion</th>
-                <th className="py-2.5 px-3">Available Tonnage</th>
-                <th className="py-2.5 px-3">Risk Level</th>
-                <th className="py-2.5 px-3">Landed Cost / MT</th>
-                <th className="py-2.5 px-3">Best For</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#1E293B]">
-              {routes.map((r) => (
-                <tr
-                  key={r.id}
-                  onClick={() => setSelectedRoute(r)}
-                  className={`hover:bg-[#1C2942] transition-colors cursor-pointer ${
-                    r.isRecommended ? 'bg-cyan-500/5' : ''
-                  }`}
-                >
-                  <td className="py-3 px-3">
-                    <div className="flex items-center gap-2 font-bold text-slate-100">
-                      <span>{r.origin} → {r.destination}</span>
-                      {r.isRecommended && (
-                        <span className="px-1.5 py-0.2 text-[9px] font-mono rounded bg-emerald-500/20 text-emerald-300">
-                          RECOMMENDED
+        <RouteMap
+          highlightPort={selectedRoute?.destination.toUpperCase()}
+          onSelectPort={(portName) => {
+            const matched = routes.find((r) => r.destination.toUpperCase() === portName);
+            if (matched) setSelectedRoute(matched);
+          }}
+        />
+      </div>
+
+      {/* Main Grid: Ranked Route Cards (8 cols) & Route Details (4 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Ranked Route Cards */}
+        <div className="lg:col-span-8 flex flex-col gap-3">
+          {routes.map((route, idx) => {
+            const isSelected = selectedRoute?.id === route.id;
+            const isRec = route.isRecommended || idx === 0;
+            const riskColor =
+              route.riskLevel === 'LOW' ? '#10B981' : route.riskLevel === 'MEDIUM' ? '#F59E0B' : '#EF4444';
+
+            return (
+              <button
+                key={route.id}
+                onClick={() => setSelectedRoute(route)}
+                className={`glass rounded-xl p-4 text-left transition-all border cursor-pointer ${
+                  isSelected
+                    ? 'border-cyan/50 ring-1 ring-cyan/30 bg-ocean-800/60 shadow-lg shadow-cyan/10'
+                    : 'border-electric/15 hover:border-electric/30 hover:bg-ocean-800/40'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Rank Badge */}
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-sm shrink-0 ${
+                      isRec
+                        ? 'bg-cyan/20 text-cyan border border-cyan/40 shadow-md'
+                        : 'bg-ocean-900 border border-electric/20 text-slate-400'
+                    }`}
+                  >
+                    #{idx + 1}
+                  </div>
+
+                  {/* Route Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-display font-bold text-sm text-slate-100">
+                        {route.origin}
+                      </span>
+                      <span className="text-cyan font-mono">→</span>
+                      <span className="font-display font-bold text-sm text-cyan">
+                        {route.destination}
+                      </span>
+                      {isRec && (
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-electric text-white font-bold">
+                          AI RECOMMENDED
                         </span>
                       )}
                     </div>
-                  </td>
-                  <td className="py-3 px-3 font-mono font-bold text-cyan-400">${r.avgFreightRate}/MT</td>
-                  <td className="py-3 px-3 font-mono text-slate-300">{r.transitTimeDays} Days</td>
-                  <td className="py-3 px-3">
-                    <span
-                      className={`font-mono text-[11px] font-bold ${
-                        r.portCongestionLevel === 'Low'
-                          ? 'text-emerald-400'
-                          : r.portCongestionLevel === 'Medium'
-                          ? 'text-amber-400'
-                          : 'text-red-400'
-                      }`}
-                    >
-                      {r.portCongestionLevel} Delay
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 font-mono text-slate-300">{r.vesselAvailabilityCount} Open Vessels</td>
-                  <td className="py-3 px-3">
-                    <span
-                      className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded-full ${
-                        r.risk === 'LOW'
-                          ? 'bg-emerald-500/10 text-emerald-400'
-                          : r.risk === 'MEDIUM'
-                          ? 'bg-amber-500/10 text-amber-400'
-                          : 'bg-red-500/10 text-red-400'
-                      }`}
-                    >
-                      {r.risk}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 font-mono font-extrabold text-slate-100">
-                    ${r.estimatedLandedCostPerMt}
-                  </td>
-                  <td className="py-3 px-3 text-slate-400 text-[11px]">
-                    {r.destination === 'Visakhapatnam'
-                      ? 'High-grade coking coal'
-                      : r.destination === 'Paradip'
-                      ? 'Lowest landed cost thermal coal'
-                      : 'Southern power plants'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div className="text-xs text-slate-400 truncate">
+                      {route.origin === 'Australia'
+                        ? 'Direct Panamax transit with low congestion and strong fleet availability.'
+                        : 'Shorter transit route with competitive landed freight efficiency.'}
+                    </div>
+                  </div>
+
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-3 gap-3 text-right font-mono shrink-0 hidden sm:grid">
+                    <div>
+                      <div className="text-[9px] text-slate-500 uppercase">Freight</div>
+                      <div className="text-xs font-bold text-cyan">${route.avgFreightRate}/MT</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-slate-500 uppercase">Transit</div>
+                      <div className="text-xs font-bold text-slate-200">{route.avgTransitDays} Days</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-slate-500 uppercase">Risk</div>
+                      <div className="text-xs font-bold" style={{ color: riskColor }}>
+                        {route.riskLevel}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Selected Route Analytics Detail */}
+        <div className="lg:col-span-4 flex flex-col gap-5">
+          {selectedRoute && (
+            <div className="glass rounded-xl p-5 border border-electric/20 space-y-4 font-mono text-xs">
+              <div className="text-[10px] text-cyan uppercase tracking-wider font-bold">
+                CORRIDOR METRICS ANALYSIS
+              </div>
+              <h3 className="font-display font-bold text-base text-slate-100 m-0">
+                {selectedRoute.origin} → {selectedRoute.destination}
+              </h3>
+
+              <div className="space-y-2 text-slate-300 divide-y divide-electric/10">
+                <div className="flex justify-between py-1.5">
+                  <span className="text-slate-400">Transit Distance:</span>
+                  <span>{(selectedRoute.distanceNm ?? 4820).toLocaleString()} Nautical Miles</span>
+                </div>
+                <div className="flex justify-between py-1.5">
+                  <span className="text-slate-400">Average Transit Time:</span>
+                  <span>{selectedRoute.avgTransitDays ?? selectedRoute.transitTimeDays ?? 16} Days (13.5 kts)</span>
+                </div>
+                <div className="flex justify-between py-1.5">
+                  <span className="text-slate-400">Current Average Freight:</span>
+                  <span className="text-cyan font-bold">${selectedRoute.avgFreightRate}/MT</span>
+                </div>
+                <div className="flex justify-between py-1.5">
+                  <span className="text-slate-400">Est. Total Landed Cost:</span>
+                  <span className="text-emerald-400 font-bold">
+                    ${((selectedRoute.avgFreightRate * 230000) / 1000000).toFixed(2)}M
+                  </span>
+                </div>
+                <div className="flex justify-between py-1.5">
+                  <span className="text-slate-400">Port Congestion Level:</span>
+                  <span className={selectedRoute.riskLevel === 'HIGH' ? 'text-rose-400 font-bold' : 'text-slate-200'}>
+                    {selectedRoute.riskLevel === 'HIGH' ? 'High (31%)' : selectedRoute.riskLevel === 'MEDIUM' ? 'Moderate (25%)' : 'Low (18%)'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Corridor Comparison Bar Chart */}
+              <div className="pt-2">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
+                  Freight Rate Comparison ($/MT)
+                </div>
+                <div className="h-32 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" vertical={false} />
+                      <XAxis dataKey="route" tick={{ fill: '#64748B', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: '#64748B', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} domain={[20, 38]} />
+                      <Tooltip
+                        contentStyle={{
+                          background: 'rgba(11, 31, 54, 0.95)',
+                          border: '1px solid rgba(22, 131, 255, 0.25)',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontFamily: 'JetBrains Mono',
+                        }}
+                        formatter={(v: any) => [`$${v}/MT`, 'Rate']}
+                      />
+                      <Bar dataKey="freight" fill="#1683FF" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

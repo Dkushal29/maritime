@@ -1,0 +1,6 @@
+port,draft_m,max_dwt,avg_waiting_days,congestion_index,status
+Visakhapatnam,18.5,200000,3.8,0.72,Operating
+Paradip,17.1,125000,2.1,0.45,Operating
+Chennai,16.5,85000,2.4,0.48,Operating
+Kamarajar,18.0,150000,1.9,0.38,Operating
+Haldia,12.5,45000,4.2,0.85,Congested

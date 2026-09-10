@@ -16,8 +16,30 @@ export interface ForecastPoint {
 export interface ForecastDriver {
   factor: string;
   importance: number; // 0-1
-  impact: 'positive' | 'negative';
+  impact: 'positive' | 'negative' | string;
   changeDesc: string;
+  name?: string;
+  direction?: 'up' | 'down';
+}
+
+export interface SubModelForecast {
+  prediction: number;
+  lower?: number;
+  upper?: number;
+  status: 'available' | 'unavailable' | string;
+}
+
+export interface EnsembleInfo {
+  prediction: number;
+  lower?: number;
+  upper?: number;
+  weights?: { xgboost: number; chronos: number };
+}
+
+export interface UncertaintyRange {
+  lower: number;
+  upper: number;
+  span: number;
 }
 
 export interface FreightPrediction {
@@ -28,6 +50,13 @@ export interface FreightPrediction {
   confidence: number; // 87
   drivers: ForecastDriver[];
   aiInsight: string;
+  xgboost?: SubModelForecast;
+  chronos?: SubModelForecast;
+  ensemble?: EnsembleInfo;
+  uncertaintyRange?: UncertaintyRange;
+  forecastMode?: 'ensemble' | 'xgboost_fallback' | string;
+  modelComponents?: string[];
+  horizonDays?: number;
 }
 
 export interface CargoDemandPoint {
@@ -46,6 +75,9 @@ export interface CargoDemandPrediction {
   procurementRequirement: number;
   inventoryCoverageDays: number;
   demandPoints: CargoDemandPoint[];
+  projectedDemand?: number;
+  demandTrendPercent?: number;
+  demandTimeline?: Array<{ date: string; inventory: number; demand: number; procurement?: number }>;
   procurementRecommendation: {
     title: string;
     quantity: number;
@@ -147,6 +179,9 @@ export interface RouteMetric {
   portCongestionLevel: 'Low' | 'Medium' | 'High';
   vesselAvailabilityCount: number;
   risk: RiskLevel;
+  riskLevel?: RiskLevel;
+  avgTransitDays?: number;
+  distanceNm?: number;
   estimatedLandedCostPerMt: number;
   isRecommended: boolean;
   originCoords: [number, number];
@@ -156,11 +191,13 @@ export interface RouteMetric {
 export interface AlertItem {
   id: string;
   title: string;
-  type: 'High Freight Risk' | 'Procurement Alert' | 'Vessel Alert';
-  category: 'Critical' | 'Warning' | 'Information' | 'Recommendation';
+  type: string;
+  category: string;
+  severity?: 'critical' | 'warning' | 'opportunity' | 'info' | string;
   description: string;
   timestamp: string;
   recommendedAction: string;
+  action?: string;
   read: boolean;
   route?: string;
 }
@@ -187,6 +224,27 @@ export interface ModelPerformanceMetric {
     trainingWindow: string;
     featureCount: number;
     actualVsPredicted: { date: string; actual: number; predicted: number }[];
+  };
+  chronosModel?: {
+    name: string;
+    modelId: string;
+    type: string;
+    status: string;
+    mae: number;
+    rmse: number;
+    mape: number;
+    testPeriod: string;
+    quantiles: string[];
+  };
+  ensembleModel?: {
+    name: string;
+    status: string;
+    components: string[];
+    weights: { xgboost: number; chronos: number };
+    mae: number;
+    rmse: number;
+    mape: number;
+    testPeriod: string;
   };
 }
 
