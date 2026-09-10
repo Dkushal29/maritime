@@ -33,6 +33,7 @@ class AlertItemSchema(BaseModel):
     title: str
     type: str
     category: str
+    severity: Optional[str] = None
     description: str
     timestamp: str
     recommended_action: str

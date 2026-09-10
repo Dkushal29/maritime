@@ -89,8 +89,10 @@ export default function RoutesPage() {
           {routes.map((route, idx) => {
             const isSelected = selectedRoute?.id === route.id;
             const isRec = route.isRecommended || idx === 0;
+            const risk = (route.riskLevel || route.risk || 'LOW').toUpperCase();
             const riskColor =
-              route.riskLevel === 'LOW' ? '#10B981' : route.riskLevel === 'MEDIUM' ? '#F59E0B' : '#EF4444';
+              risk === 'LOW' ? '#10B981' : risk === 'MEDIUM' ? '#F59E0B' : '#EF4444';
+            const transitDays = route.avgTransitDays ?? route.transitTimeDays ?? (route.origin === 'Indonesia' ? 8.2 : 16.5);
 
             return (
               <button
@@ -145,12 +147,12 @@ export default function RoutesPage() {
                     </div>
                     <div>
                       <div className="text-[9px] text-slate-500 uppercase">Transit</div>
-                      <div className="text-xs font-bold text-slate-200">{route.avgTransitDays} Days</div>
+                      <div className="text-xs font-bold text-slate-200">{transitDays} Days</div>
                     </div>
                     <div>
                       <div className="text-[9px] text-slate-500 uppercase">Risk</div>
                       <div className="text-xs font-bold" style={{ color: riskColor }}>
-                        {route.riskLevel}
+                        {risk}
                       </div>
                     </div>
                   </div>
@@ -192,9 +194,14 @@ export default function RoutesPage() {
                 </div>
                 <div className="flex justify-between py-1.5">
                   <span className="text-slate-400">Port Congestion Level:</span>
-                  <span className={selectedRoute.riskLevel === 'HIGH' ? 'text-rose-400 font-bold' : 'text-slate-200'}>
-                    {selectedRoute.riskLevel === 'HIGH' ? 'High (31%)' : selectedRoute.riskLevel === 'MEDIUM' ? 'Moderate (25%)' : 'Low (18%)'}
-                  </span>
+                  {(() => {
+                    const selRisk = (selectedRoute.riskLevel || selectedRoute.risk || 'LOW').toUpperCase();
+                    return (
+                      <span className={selRisk === 'HIGH' ? 'text-rose-400 font-bold' : selRisk === 'MEDIUM' ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}>
+                        {selRisk === 'HIGH' ? 'High Congestion' : selRisk === 'MEDIUM' ? 'Moderate Congestion' : 'Low Congestion'}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 

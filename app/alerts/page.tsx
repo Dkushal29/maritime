@@ -6,11 +6,11 @@ import { AlertItem } from '@/types';
 import { AlertCard } from '@/components/maritime/AlertCard';
 import { PageHero } from '@/components/maritime/PageHero';
 
-const CATEGORIES = ['All', 'CRITICAL', 'WARNING', 'OPPORTUNITY', 'INFO'];
+const CATEGORIES = ['All', 'CRITICAL', 'WARNING', 'OPPORTUNITY', 'INFO'] as const;
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState<string>('All');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,12 +26,35 @@ export default function AlertsPage() {
       });
   }, []);
 
-  const filtered = filter === 'All'
-    ? alerts
-    : alerts.filter((a) => {
-        const typeStr = (a.type || a.severity || a.category || '').toUpperCase();
-        return typeStr.includes(filter.toUpperCase());
-      });
+  const matchCategory = (a: AlertItem, cat: string) => {
+    if (cat === 'All') return true;
+    const sev = String(a.severity || a.category || '').toLowerCase();
+    const typ = String(a.type || '').toLowerCase();
+    const c = cat.toLowerCase();
+
+    if (c === 'critical') {
+      return sev.includes('crit') || typ.includes('crit');
+    }
+    if (c === 'warning') {
+      return sev.includes('warn') || typ.includes('warn');
+    }
+    if (c === 'opportunity') {
+      return sev.includes('opp') || sev.includes('recom') || typ.includes('opp') || typ.includes('arbitrage');
+    }
+    if (c === 'info') {
+      return sev.includes('info') || typ.includes('info') || typ.includes('advisory') || (!sev.includes('crit') && !sev.includes('warn') && !sev.includes('opp'));
+    }
+    return true;
+  };
+
+  const getCategoryCount = (cat: string) => {
+    return alerts.filter((a) => matchCategory(a, cat)).length;
+  };
+
+  const filtered = alerts.filter((a) => matchCategory(a, filter));
+
+  const critCount = getCategoryCount('CRITICAL');
+  const warnCount = getCategoryCount('WARNING');
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -51,9 +74,9 @@ export default function AlertsPage() {
           href: "/simulator",
         }}
         stats={[
-          { value: `${alerts.length || 5} Active`, label: "Risk Telemetry Alerts", sublabel: "Real-time Feed" },
-          { value: "2 Critical", label: "High Severity Spikes", sublabel: "Urgent Mitigation" },
-          { value: "11 Days", label: "Stockpile Buffer", sublabel: "Vizag Coal Burn-Rate" },
+          { value: `${alerts.length} Active`, label: "Risk Telemetry Alerts", sublabel: "Real-time Feed" },
+          { value: `${critCount} Critical`, label: "High Severity Spikes", sublabel: "Urgent Mitigation" },
+          { value: `${warnCount} Warnings`, label: "Operational Warnings", sublabel: "Threshold Triggers" },
           { value: "+21.6%", label: "Freight Volatility", sublabel: "30-Day Forward Curve" },
         ]}
       />
@@ -61,23 +84,31 @@ export default function AlertsPage() {
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1.5 p-1 bg-ocean-950/80 rounded-xl border border-electric/15">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
-                filter === cat
-                  ? 'bg-electric text-white shadow-md shadow-electric/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-ocean-800/60'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const count = getCategoryCount(cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  filter === cat
+                    ? 'bg-electric text-white shadow-md shadow-electric/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-ocean-800/60'
+                }`}
+              >
+                <span>{cat}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  filter === cat ? 'bg-white/20 text-white' : 'bg-ocean-800 text-slate-400'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="text-xs font-mono text-slate-400">
-          Showing <strong className="text-cyan">{filtered.length}</strong> active notifications
+          Showing <strong className="text-cyan font-bold">{filtered.length}</strong> active notifications
         </div>
       </div>
 
@@ -100,13 +131,13 @@ export default function AlertsPage() {
               alert={{
                 id: alert.id,
                 title: alert.title,
-                type: alert.type || alert.severity || 'INFO',
-                severity: (alert.severity as any) || (alert.type?.toLowerCase() as any) || 'info',
+                type: alert.type || 'Operational Telemetry',
+                severity: alert.severity || alert.category?.toLowerCase() || 'info',
                 category: alert.category,
                 route: alert.route,
                 description: alert.description,
                 action: alert.action || alert.recommendedAction || 'Monitor parameters closely.',
-                time: alert.timestamp || '2 min ago',
+                time: alert.timestamp || 'Just now',
               }}
             />
           ))}

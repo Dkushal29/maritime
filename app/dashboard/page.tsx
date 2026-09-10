@@ -47,6 +47,7 @@ export default function DashboardPage() {
   } | null>(null);
   const [forecast30d, setForecast30d] = useState<FreightPrediction | null>(null);
   const [selectedPort, setSelectedPort] = useState('VIZAG');
+  const [alertFilter, setAlertFilter] = useState<'All' | 'Critical' | 'Warning' | 'Opportunity'>('All');
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -418,18 +419,68 @@ export default function DashboardPage() {
           <div className="glass rounded-xl p-5 border border-electric/15">
             <div className="flex items-center justify-between mb-3">
               <div className="text-[10px] text-cyan font-mono tracking-wider uppercase font-bold">
-                ◆ ACTIVE ALERTS ({alerts.length})
+                ◆ ACTIVE NOTIFICATIONS ({alerts.length})
               </div>
               <Link href="/alerts" className="text-[11px] font-mono text-cyan hover:underline">
-                View All →
+                Alert Center →
               </Link>
             </div>
 
-            <div className="flex flex-col gap-2.5">
-              {alerts.slice(0, 3).map((alert) => (
-                <AlertCard key={alert.id} alert={alert} />
-              ))}
-            </div>
+            {/* Condition Filter Tabs */}
+            {(() => {
+              const matchCondition = (a: AlertItem, cat: string) => {
+                if (cat === 'All') return true;
+                const sev = String(a.severity || a.category || '').toLowerCase();
+                const typ = String(a.type || '').toLowerCase();
+                const c = cat.toLowerCase();
+                if (c === 'critical') return sev.includes('crit') || typ.includes('crit');
+                if (c === 'warning') return sev.includes('warn') || typ.includes('warn');
+                if (c === 'opportunity') return sev.includes('opp') || sev.includes('recom') || typ.includes('opp') || typ.includes('arbitrage');
+                return true;
+              };
+
+              const filteredAlerts = alerts.filter((a) => matchCondition(a, alertFilter));
+
+              return (
+                <>
+                  <div className="flex items-center gap-1 p-1 bg-ocean-950/80 rounded-lg border border-electric/15 mb-3">
+                    {(['All', 'Critical', 'Warning', 'Opportunity'] as const).map((cat) => {
+                      const count = alerts.filter((a) => matchCondition(a, cat)).length;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setAlertFilter(cat)}
+                          className={`flex-1 py-1 rounded text-[10px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                            alertFilter === cat
+                              ? 'bg-electric text-white shadow-sm'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-ocean-800/60'
+                          }`}
+                        >
+                          <span>{cat}</span>
+                          <span className={`text-[9px] px-1.5 py-0.1 rounded-full ${
+                            alertFilter === cat ? 'bg-white/20 text-white' : 'bg-ocean-900 text-slate-400'
+                          }`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex flex-col gap-2.5">
+                    {filteredAlerts.length > 0 ? (
+                      filteredAlerts.slice(0, 3).map((alert) => (
+                        <AlertCard key={alert.id} alert={alert} />
+                      ))
+                    ) : (
+                      <div className="py-6 text-center text-xs font-mono text-slate-500 glass rounded-lg border border-dashed border-electric/15">
+                        No {alertFilter.toLowerCase()} notifications active.
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>

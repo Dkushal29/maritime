@@ -123,15 +123,17 @@ def get_routes() -> List[Dict[str, Any]]:
         for _, row in df.iterrows():
             orig = row["origin"]
             dest = row["destination"]
+            avg_rate = round(float(row["average_freight"]), 1)
+
             routes.append({
                 "id": str(row["route_id"]),
                 "origin": orig,
                 "destination": dest,
                 "distance_nm": int(row["distance_nm"]),
                 "transit_days": float(row["transit_days"]),
-                "average_freight": float(row["average_freight"]),
+                "average_freight": avg_rate,
                 "port_congestion": str(row["port_congestion"]),
-                "risk": str(row["risk"]),
+                "risk": str(row["risk"]).upper(),
                 "landed_cost": float(row["landed_cost"]),
                 "origin_coords": route_coords.get(orig, [0.0, 0.0]),
                 "dest_coords": route_coords.get(dest, [0.0, 0.0]),

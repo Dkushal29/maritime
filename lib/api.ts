@@ -286,20 +286,27 @@ export async function runSimulation(input: SimulationInput): Promise<SimulationR
 export async function getRouteAnalytics(): Promise<RouteMetric[]> {
   try {
     const data = await apiFetch<any[]>('/api/v1/routes', { method: 'GET' }, mockRouteMetrics);
-    return data.map((r) => ({
-      id: r.id,
-      origin: r.origin,
-      destination: r.destination,
-      avgFreightRate: r.average_freight,
-      transitTimeDays: r.transit_days,
-      portCongestionLevel: r.port_congestion,
-      vesselAvailabilityCount: 4,
-      risk: r.risk as RiskLevel,
-      estimatedLandedCostPerMt: r.landed_cost,
-      isRecommended: r.is_recommended,
-      originCoords: r.origin_coords,
-      destCoords: r.dest_coords,
-    }));
+    return data.map((r) => {
+      const riskVal = (r.risk ? String(r.risk).toUpperCase() : 'LOW') as RiskLevel;
+      const transitDays = Number(r.transit_days ?? r.transitTimeDays ?? r.avgTransitDays ?? 16);
+      return {
+        id: String(r.id),
+        origin: r.origin,
+        destination: r.destination,
+        avgFreightRate: Number(r.average_freight ?? r.avgFreightRate ?? 31.8),
+        transitTimeDays: transitDays,
+        avgTransitDays: transitDays,
+        distanceNm: Number(r.distance_nm ?? r.distanceNm ?? 4820),
+        portCongestionLevel: r.port_congestion ?? r.portCongestionLevel ?? 'Medium',
+        vesselAvailabilityCount: Number(r.vessel_availability ?? r.vesselAvailabilityCount ?? 4),
+        risk: riskVal,
+        riskLevel: riskVal,
+        estimatedLandedCostPerMt: Number(r.landed_cost ?? r.estimatedLandedCostPerMt ?? 142.8),
+        isRecommended: Boolean(r.is_recommended ?? r.isRecommended),
+        originCoords: r.origin_coords ?? [0, 0],
+        destCoords: r.dest_coords ?? [0, 0],
+      };
+    });
   } catch {
     return mockRouteMetrics;
   }
@@ -611,15 +618,29 @@ function mapRecommendation(raw: any): CharterRecommendation {
 }
 
 function mapAlert(raw: any): AlertItem {
+  const rawSev = String(raw.severity || raw.category || raw.type || 'info').toLowerCase();
+  const normalizedSev =
+    rawSev.includes('crit') ? 'critical' :
+    rawSev.includes('warn') ? 'warning' :
+    rawSev.includes('opp') || rawSev.includes('recom') || rawSev.includes('arbitrage') ? 'opportunity' :
+    'info';
+
+  const catDisplay =
+    normalizedSev === 'critical' ? 'Critical' :
+    normalizedSev === 'warning' ? 'Warning' :
+    normalizedSev === 'opportunity' ? 'Opportunity' : 'Information';
+
   return {
-    id: raw.id,
+    id: String(raw.id),
     title: raw.title,
-    type: raw.type,
-    category: raw.category,
+    type: raw.type || 'Operational Telemetry',
+    category: raw.category || catDisplay,
+    severity: normalizedSev,
     description: raw.description,
-    timestamp: raw.timestamp,
-    recommendedAction: raw.recommended_action ?? raw.recommendedAction,
-    read: raw.read,
+    timestamp: raw.timestamp || 'Just now',
+    recommendedAction: raw.recommended_action ?? raw.recommendedAction ?? 'Monitor operational parameters closely.',
+    action: raw.action ?? raw.recommended_action ?? raw.recommendedAction ?? 'Monitor operational parameters closely.',
+    read: Boolean(raw.read),
     route: raw.route,
   };
 }
