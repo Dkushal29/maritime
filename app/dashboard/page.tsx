@@ -27,6 +27,14 @@ const PORTS = [
   { name: 'HALDIA', freight: '$33.0/MT', congestion: '31%', risk: 'High' as const, vessels: 'Low' },
 ];
 
+const portMap: Record<string, string> = {
+  'VIZAG': 'Visakhapatnam',
+  'PARADIP': 'Paradip',
+  'CHENNAI': 'Chennai',
+  'KAMARAJAR': 'Kamarajar',
+  'HALDIA': 'Haldia',
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const { origin, destination, cargo, vesselType } = useAppStore();
@@ -40,12 +48,15 @@ export default function DashboardPage() {
   const [forecast30d, setForecast30d] = useState<FreightPrediction | null>(null);
   const [selectedPort, setSelectedPort] = useState('VIZAG');
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  // Initial full load
   useEffect(() => {
     setIsLoading(true);
+    const dest = portMap[selectedPort] || 'Visakhapatnam';
     Promise.all([
       getDashboardData(),
-      getFreightForecast('30D'),
+      getFreightForecast('30D', origin, dest as any, cargo, vesselType),
     ])
       .then(([dashRes, forecastRes]) => {
         setData(dashRes);
@@ -56,7 +67,24 @@ export default function DashboardPage() {
         console.error('Dashboard load error:', err);
         setIsLoading(false);
       });
-  }, [origin, destination, cargo, vesselType]);
+  }, []);
+
+  // Dynamic update when user selects a different port or scenario parameters
+  useEffect(() => {
+    if (isLoading) return;
+    const dest = portMap[selectedPort] || 'Visakhapatnam';
+    setIsUpdating(true);
+    getFreightForecast('30D', origin, dest as any, cargo, vesselType)
+      .then((forecastRes) => {
+        setForecast30d(forecastRes);
+        setData((prev) => prev ? { ...prev, freight: forecastRes } : null);
+        setIsUpdating(false);
+      })
+      .catch((err) => {
+        console.error('Dynamic forecast update error:', err);
+        setIsUpdating(false);
+      });
+  }, [selectedPort, origin, cargo, vesselType]);
 
   if (isLoading || !data) {
     return (
@@ -77,15 +105,23 @@ export default function DashboardPage() {
 
   const { freight, cargo: cargoData, recommendation, alerts } = data;
 
+  // Real historical rates from model pipeline
+  const histVals = (freight.historical && freight.historical.length > 0)
+    ? freight.historical.slice(-6).map((h) => h.rate)
+    : [+(freight.currentRate * 0.93).toFixed(1), +(freight.currentRate * 0.95).toFixed(1), +(freight.currentRate * 0.97).toFixed(1), +(freight.currentRate * 0.99).toFixed(1)];
+
+  // Real forward predictions from model pipeline
+  const predVals = (forecast30d?.predictions || freight.predictions || []).slice(0, 6).map((p) => p.predicted);
+
   const kpis = [
     {
       label: 'Freight Rate',
       value: `$${freight.currentRate.toFixed(1)}`,
       unit: '/MT',
-      trend: '+11.3%',
+      trend: `${freight.changePercent >= 0 ? '+' : ''}${freight.changePercent.toFixed(1)}%`,
       isPositive: false,
       color: '#22D3EE',
-      sparkline: [28, 29, 30, 28.5, 31, 30.5, freight.currentRate],
+      sparkline: [...histVals, freight.currentRate],
     },
     {
       label: '30D Forecast',
@@ -94,7 +130,7 @@ export default function DashboardPage() {
       trend: `Range $${(freight.uncertaintyRange?.lower ?? freight.predicted30dRate * 0.92).toFixed(1)}-$${(freight.uncertaintyRange?.upper ?? freight.predicted30dRate * 1.08).toFixed(1)}`,
       isPositive: false,
       color: '#1683FF',
-      sparkline: [31.8, 32.2, 32.8, 33.5, 34.2, 34.8, freight.predicted30dRate],
+      sparkline: [freight.currentRate, ...predVals],
     },
     {
       label: 'Cargo Demand',
@@ -103,7 +139,9 @@ export default function DashboardPage() {
       trend: `${(cargoData.demandTrendPercent ?? 8.4) > 0 ? '+' : ''}${(cargoData.demandTrendPercent ?? 8.4).toFixed(1)}%`,
       isPositive: true,
       color: '#8B5CF6',
-      sparkline: [120, 140, 160, 185, 200, 215, (cargoData.projectedDemand ?? cargoData.expected30dDemand) / 1000],
+      sparkline: (cargoData.demandTimeline && cargoData.demandTimeline.length > 0)
+        ? cargoData.demandTimeline.map((t) => t.demand)
+        : [140, 160, 185, 200, 215, (cargoData.projectedDemand ?? cargoData.expected30dDemand) / 1000],
     },
     {
       label: 'Inv. Coverage',
@@ -112,7 +150,9 @@ export default function DashboardPage() {
       trend: cargoData.inventoryCoverageDays < 15 ? 'Alert' : 'Stable',
       isPositive: cargoData.inventoryCoverageDays >= 15,
       color: cargoData.inventoryCoverageDays < 15 ? '#F59E0B' : '#10B981',
-      sparkline: [25, 22, 18, 16, 14, 12, cargoData.inventoryCoverageDays],
+      sparkline: (cargoData.demandTimeline && cargoData.demandTimeline.length > 0)
+        ? cargoData.demandTimeline.map((t) => Math.max(4, Math.round(t.inventory / 8)))
+        : [22, 18, 16, 14, 12, cargoData.inventoryCoverageDays],
     },
     {
       label: 'Optimal Charter',
@@ -121,7 +161,12 @@ export default function DashboardPage() {
       trend: 'Min Cost',
       isPositive: true,
       color: '#10B981',
-      sparkline: [8.2, 8.0, 7.8, 7.6, 7.5, 7.4, recommendation.estimatedCharterCost / 1000000],
+      sparkline: [
+        +((recommendation.estimatedCharterCost / 1000000) * 1.08).toFixed(2),
+        +((recommendation.estimatedCharterCost / 1000000) * 1.05).toFixed(2),
+        +((recommendation.estimatedCharterCost / 1000000) * 1.02).toFixed(2),
+        +(recommendation.estimatedCharterCost / 1000000).toFixed(2),
+      ],
     },
     {
       label: 'Est. Savings',
@@ -130,15 +175,41 @@ export default function DashboardPage() {
       trend: '87% Conf.',
       isPositive: true,
       color: '#10B981',
-      sparkline: [180, 240, 310, 350, 380, 400, recommendation.expectedSavings / 1000],
+      sparkline: [
+        +((recommendation.expectedSavings / 1000) * 0.6).toFixed(0),
+        +((recommendation.expectedSavings / 1000) * 0.8).toFixed(0),
+        +((recommendation.expectedSavings / 1000) * 0.9).toFixed(0),
+        +(recommendation.expectedSavings / 1000).toFixed(0),
+      ],
     },
   ];
 
-  // Freight mini chart points from API predictions
-  const miniChartData = (forecast30d?.predictions || []).slice(0, 12).map((p) => ({
-    d: p.date,
-    val: p.predicted ?? p.actual ?? 31.8,
+  // Dynamic mini chart points: Real historical points -> Spot anchor -> Real model trajectory
+  const histPoints = (freight.historical && freight.historical.length > 0)
+    ? freight.historical.slice(-5).map((h) => ({
+        d: h.date.length > 5 ? h.date.substring(5) : h.date,
+        val: h.rate,
+      }))
+    : [
+        { d: '06-01', val: +(freight.currentRate * 0.94).toFixed(1) },
+        { d: '07-01', val: +(freight.currentRate * 0.97).toFixed(1) },
+        { d: '08-01', val: +(freight.currentRate * 0.99).toFixed(1) },
+      ];
+
+  const predPoints = (forecast30d?.predictions || freight.predictions || []).map((p) => ({
+    d: p.date.length > 5 ? p.date.substring(5) : p.date,
+    val: p.predicted,
   }));
+
+  const miniChartData = [...histPoints, { d: 'Spot', val: freight.currentRate }, ...predPoints];
+
+  const dynamicPorts = [
+    { name: 'PARADIP', freight: `$${(freight.currentRate * 0.95).toFixed(1)}/MT`, congestion: '22%', risk: 'Low' as const, vessels: 'High' },
+    { name: 'VIZAG', freight: `$${freight.currentRate.toFixed(1)}/MT`, congestion: '18%', risk: 'Low' as const, vessels: 'High' },
+    { name: 'CHENNAI', freight: `$${(freight.currentRate * 1.02).toFixed(1)}/MT`, congestion: '28%', risk: 'Medium' as const, vessels: 'Medium' },
+    { name: 'KAMARAJAR', freight: `$${(freight.currentRate * 1.01).toFixed(1)}/MT`, congestion: '25%', risk: 'Medium' as const, vessels: 'High' },
+    { name: 'HALDIA', freight: `$${(freight.currentRate * 1.04).toFixed(1)}/MT`, congestion: '31%', risk: 'High' as const, vessels: 'Low' },
+  ];
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -217,13 +288,22 @@ export default function DashboardPage() {
                   East Coast Maritime Terminal Pulse
                 </h3>
               </div>
-              <span className="text-[11px] font-mono text-slate-400">
-                Selected: <strong className="text-cyan">{selectedPort}</strong>
-              </span>
+              <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                {isUpdating ? (
+                  <span className="text-cyan animate-pulse flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan inline-block animate-ping" />
+                    Calculating Model Inference...
+                  </span>
+                ) : (
+                  <span>
+                    Selected: <strong className="text-cyan">{selectedPort}</strong>
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {PORTS.map((port) => (
+              {dynamicPorts.map((port) => (
                 <PortCard
                   key={port.name}
                   name={port.name}

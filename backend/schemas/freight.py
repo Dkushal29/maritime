@@ -69,3 +69,4 @@ class FreightPredictionResponse(BaseModel):
     forecast_mode: Optional[str] = "ensemble"
     model_components: Optional[List[str]] = Field(default_factory=lambda: ["XGBoost", "Chronos-Bolt Small"])
     horizon_days: Optional[int] = 30
+    historical: Optional[List[Dict[str, Any]]] = None

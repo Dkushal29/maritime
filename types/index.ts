@@ -57,6 +57,7 @@ export interface FreightPrediction {
   forecastMode?: 'ensemble' | 'xgboost_fallback' | string;
   modelComponents?: string[];
   horizonDays?: number;
+  historical?: Array<{ date: string; rate: number }>;
 }
 
 export interface CargoDemandPoint {

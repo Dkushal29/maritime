@@ -526,6 +526,7 @@ function mapFreightPrediction(raw: any): FreightPrediction {
     forecastMode: raw.forecast_mode ?? 'ensemble',
     modelComponents: raw.model_components ?? ['XGBoost', 'Chronos-Bolt Small'],
     horizonDays: raw.horizon_days ?? 30,
+    historical: raw.historical || [],
   };
 }
 

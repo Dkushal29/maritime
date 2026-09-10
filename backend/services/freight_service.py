@@ -217,4 +217,8 @@ def predict_freight(
         "forecast_mode": forecast_mode,
         "model_components": ["XGBoost", "Chronos-Bolt Small"] if forecast_mode == "ensemble" else ["XGBoost"],
         "horizon_days": forecast_days,
+        "historical": [
+            {"date": d, "rate": round(float(r), 2)}
+            for d, r in zip(hist_dates[-8:], hist_rates[-8:])
+        ] if 'hist_dates' in locals() and hist_dates else [],
     }
