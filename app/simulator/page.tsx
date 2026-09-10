@@ -17,6 +17,7 @@ import {
 import { runSimulation } from '@/lib/api';
 import { SimulationResult } from '@/types';
 import { Slider } from '@/components/ui/Slider';
+import { PageHero } from '@/components/maritime/PageHero';
 
 type CongLevel = 'Low' | 'Medium' | 'High';
 type AvailLevel = 'Low' | 'Medium' | 'High';
@@ -94,17 +95,40 @@ export default function WhatIfSimulatorPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="WHAT-IF STRESS TESTING & SENSITIVITY"
+        subBadge="MACRO SHOCK SIMULATION"
+        titleLine1="Simulate the shocks."
+        titleLine2="Protect the margins."
+        description="Dynamic sensitivity analysis testing bunker price spikes, port congestion bottlenecks, tonnage deficits, and commodity surges against chartering expenditure."
+        primaryAction={{
+          label: "Execute Charter Hedge",
+          href: "/optimization",
+        }}
+        secondaryAction={{
+          label: "Review Forecast Trajectory",
+          href: "/forecast",
+        }}
+        stats={[
+          { value: `$${baseFreight.toFixed(1)}/MT`, label: "Baseline Freight", sublabel: `$${bunker}/MT VLSFO` },
+          { value: `$${simFreight.toFixed(1)}/MT`, label: "Simulated Freight", sublabel: `${simFreight >= baseFreight ? '+' : ''}${((simFreight - baseFreight) / baseFreight * 100).toFixed(1)}% Shock` },
+          { value: `${deltaCost >= 0 ? '+' : ''}$${(deltaCost * 1000).toFixed(0)}k`, label: "Simulated Cost Delta", sublabel: `Total: $${simCost.toFixed(2)}M` },
+          { value: riskStr, label: "Operational Risk Index", sublabel: "Stress-Test Grade" },
+        ]}
+      />
+
+      {/* Simulator Workspace Header */}
       <div>
         <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-          ◆ SCENARIO SENSITIVITY & STRESS-TESTING
+          ◆ INTERACTIVE SENSITIVITY CONTROLS
         </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          What-If Maritime Decision Simulator
-        </h1>
+        <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-100 m-0">
+          Macro Shock Parameters
+        </h2>
         <p className="text-xs text-slate-400 mt-1">
-          Stress-test freight sensitivity, vessel charter cost, and landed risk across macro market shocks.
+          Adjust variable sliders to trigger immediate real-time sensitivity recalculation.
         </p>
       </div>
 

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import Sidebar from './Sidebar';
 import Header from './Header';
 import CommandPalette from '../CommandPalette';
 import AICopilotDrawer from '../AICopilotDrawer';
@@ -14,27 +13,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isLandingPage) {
     return (
-      <div className="min-h-screen bg-ocean-950 text-slate-100 font-sans">
+      <div className="min-h-screen bg-ocean-950 text-slate-100 font-sans selection:bg-cyan selection:text-ocean-950">
         {children}
         <CommandPalette />
+        <AICopilotDrawer />
+        <VesselDetailDrawer />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ocean-950 text-slate-100 font-sans">
-      {/* Left Collapsible Sidebar */}
-      <Sidebar />
+    <div className="min-h-screen flex flex-col bg-ocean-950 text-slate-100 font-sans selection:bg-cyan selection:text-ocean-950">
+      {/* Unified Cinematic Top Navigation Bar */}
+      <Header />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto scroll-hidden bg-ocean-900/40">
-          <div className="p-4 md:p-7 max-w-[1680px] mx-auto w-full">
-            {children}
-          </div>
-        </main>
-      </div>
+      {/* Full-Width Spacious Main Canvas with Smooth Webflow */}
+      <main className="flex-1 w-full bg-ocean-950/60 pb-16">
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 pt-6 sm:pt-8 animate-fade-in">
+          {children}
+        </div>
+      </main>
 
       {/* Drawers & Command Overlays */}
       <CommandPalette />

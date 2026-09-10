@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Leaf, Award, ShieldCheck, Zap } from 'lucide-react';
+import { PageHero } from '@/components/maritime/PageHero';
 
 const CO2_TREND = [
   { m: 'Jan', base: 100, optimized: 98 },
@@ -45,20 +46,29 @@ const METRICS = [
 
 export default function SustainabilityPage() {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-[11px] text-emerald-400 font-mono tracking-wider uppercase mb-1 font-bold flex items-center gap-1.5">
-          <Leaf className="w-3.5 h-3.5" />
-          <span>◆ ESG & ENVIRONMENTAL INTELLIGENCE</span>
-        </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          Maritime Sustainability & Carbon Accounting
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          IMO Carbon Intensity Indicator (CII) tracking, voyage fuel efficiency & emissions optimization
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="GREEN FLEET & CARBON ACCOUNTING"
+        subBadge="IMO CII RATING A+"
+        titleLine1="Reduce emissions."
+        titleLine2="Meet IMO targets."
+        description="Voyage speed optimization, weather routing, and fleet age filtering that lower carbon intensity (CII) by 18% while cutting heavy fuel consumption across bulk corridors."
+        primaryAction={{
+          label: "Run Eco-Steaming Optimization",
+          href: "/optimization",
+        }}
+        secondaryAction={{
+          label: "Inspect Fleet Telemetry",
+          href: "/vessels",
+        }}
+        stats={[
+          { value: "-18%", label: "CO₂ Emissions Reduction", sublabel: "vs Unoptimized Charter" },
+          { value: "+11%", label: "Voyage Fuel Efficiency", sublabel: "Eco-Steaming Compliant" },
+          { value: "12,400 MT", label: "Annualized CO₂ Saved", sublabel: "ESG Audit Certified" },
+          { value: "Rating A+", label: "IMO CII Fleet Index", sublabel: "Top Tier Decarbonization" },
+        ]}
+      />
 
       {/* Hero Banner with Green Highlights */}
       <div

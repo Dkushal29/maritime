@@ -8,6 +8,7 @@ import { Vessel } from '@/types';
 import { VesselCard } from '@/components/maritime/VesselCard';
 import { VesselStatus } from '@/components/maritime/VesselStatus';
 import { Drawer } from '@/components/ui/Drawer';
+import { PageHero } from '@/components/maritime/PageHero';
 
 const VESSEL_TYPES = ['All', 'Panamax', 'Capesize', 'Supramax', 'Handysize'];
 const STATUS_OPTIONS = ['All', 'Available', 'At Sea', 'Booked', 'Maintenance'];
@@ -58,18 +59,41 @@ export default function VesselsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="FLEET TONNAGE & POSITIONING INTELLIGENCE"
+        subBadge="AI SUITABILITY RANKING"
+        titleLine1="Score the tonnage."
+        titleLine2="Charter the best."
+        description="Real-time AIS positioning, deadweight capacity verification, fuel efficiency telemetry, and multi-factor suitability scoring tailored for East Coast of India bulk discharge."
+        primaryAction={{
+          label: "Run Charter Optimizer",
+          href: "/optimization",
+        }}
+        secondaryAction={{
+          label: "View Sustainability Ratings",
+          href: "/sustainability",
+        }}
+        stats={[
+          { value: `${vessels.length || 12} Vessels`, label: "Monitored Fleet", sublabel: "Panamax / Cape / Supra" },
+          { value: "94 / 100", label: "Top Vessel Score", sublabel: "MV Ocean Star" },
+          { value: "$24,500", label: "Avg. Daily Hire Rate", sublabel: "Panamax Class" },
+          { value: "14.2 Knots", label: "Fleet Eco-Speed", sublabel: "CII Class-A Ready" },
+        ]}
+      />
+
+      {/* Controls & Filter Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-            ◆ FLEET TRACKING & TONNAGE
+            ◆ FLEET FILTERING & DIRECTORY
           </div>
-          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-            Vessel Intelligence Terminal
-          </h1>
+          <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-100 m-0">
+            Active Vessel Registry
+          </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time tonnage tracking, DWT specs, daily charter rates & AI suitability scores
+            Filter by vessel class, deployment status, and cargo suitability.
           </p>
         </div>
 

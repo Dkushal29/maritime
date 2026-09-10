@@ -5,6 +5,7 @@ import { useAppStore } from '@/lib/store';
 import { optimizeCharter } from '@/lib/api';
 import { CharterRecommendation } from '@/types';
 import { Sparkles, Check, ArrowLeft, Ship, ShieldCheck, DollarSign } from 'lucide-react';
+import { PageHero } from '@/components/maritime/PageHero';
 
 type Step = 'input' | 'processing' | 'result';
 
@@ -326,17 +327,40 @@ export default function OptimizationPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="MILP FLEET CHARTER OPTIMIZATION"
+        subBadge="GOOGLE OR-TOOLS SOLVER"
+        titleLine1="Optimize the fleet."
+        titleLine2="Maximize the savings."
+        description="Constraint-driven mixed integer linear programming (MILP) solving vessel suitability, draft limits, laycan windows, and forward ensemble freight curves to deliver minimum landed cost."
+        primaryAction={{
+          label: "Run AI Optimization Engine",
+          onClick: runOptimization,
+        }}
+        secondaryAction={{
+          label: "Explore Fleet Intelligence",
+          href: "/vessels",
+        }}
+        stats={[
+          { value: "$7.36M", label: "Optimal Total Cost", sublabel: "230k MT Requirement" },
+          { value: "$420K", label: "Estimated Savings", sublabel: "vs Spot Benchmark" },
+          { value: "94 / 100", label: "Top Suitability", sublabel: "MV Ocean Star" },
+          { value: "< 7 Days", label: "Recommended Laycan", sublabel: "Optimal Charter Window" },
+        ]}
+      />
+
+      {/* Form Section Header */}
       <div>
         <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-          ◆ AI-POWERED OPTIMIZATION
+          ◆ CHARTER SPECIFICATIONS & OPERATIONAL CONSTRAINTS
         </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          AI Charter Optimization Engine
-        </h1>
+        <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-100 m-0">
+          Optimization Parameters
+        </h2>
         <p className="text-xs text-slate-400 mt-1">
-          Find the lowest-risk, lowest-cost vessel charter strategy using Google OR-Tools MILP optimization.
+          Configure cargo demand quantity, origin-destination corridor, laycan deadlines, and budget ceilings.
         </p>
       </div>
 

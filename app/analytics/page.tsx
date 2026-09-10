@@ -18,6 +18,7 @@ import {
 import { getModelMetrics, getFeatureImportance, getCorrelationMatrix } from '@/lib/api';
 import { ModelPerformanceMetric } from '@/types';
 import { FreightDriverCard } from '@/components/maritime/FreightDriverCard';
+import { PageHero } from '@/components/maritime/PageHero';
 
 const FREIGHT_TREND = [
   { m: 'Jan', rate: 24.2, forecast: 24.8 },
@@ -95,19 +96,29 @@ export default function AdvancedAnalyticsPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-          ◆ DATA SCIENCE & ML TELEMETRY
-        </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          Advanced Analytics & Model Explainability
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          XGBoost regressors, SHAP attribution, Pearson correlation matrix & model accuracy metrics
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="MODEL TELEMETRY & EXPLAINABLE AI"
+        subBadge="DUAL-MODEL ARCHITECTURE"
+        titleLine1="Inspect the features."
+        titleLine2="Verify the models."
+        description="Transparent machine learning metrics across XGBoost tabular regressors, Chronos-Bolt Small sequence foundation models, and multi-model ensemble synthesis on out-of-sample holdout test sets."
+        primaryAction={{
+          label: "Explore Freight Forecasts",
+          href: "/forecast",
+        }}
+        secondaryAction={{
+          label: "Run Optimization Solver",
+          href: "/optimization",
+        }}
+        stats={[
+          { value: "99.3%", label: "XGBoost R² Accuracy", sublabel: "Out-of-Sample Test" },
+          { value: `$${metrics?.freightModel.mae ? metrics.freightModel.mae.toFixed(2) : '0.89'} / MT`, label: "XGBoost MAE", sublabel: "Tabular Signals" },
+          { value: `$${metrics?.chronosModel?.mae ? metrics.chronosModel.mae.toFixed(2) : '1.86'} / MT`, label: "Chronos-Bolt MAE", sublabel: "Zero-Shot Time-Series" },
+          { value: `$${metrics?.ensembleModel?.mae ? metrics.ensembleModel.mae.toFixed(2) : '1.14'} / MT`, label: "Ensemble Blend MAE", sublabel: "Synthesized Benchmark" },
+        ]}
+      />
 
       {/* Top Models Performance Strip */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

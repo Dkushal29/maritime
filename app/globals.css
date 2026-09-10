@@ -70,6 +70,27 @@ body {
 .glow-electric { box-shadow: 0 0 20px rgba(22, 131, 255, 0.3); }
 .glow-cyan { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
 .glow-success { box-shadow: 0 0 16px rgba(16, 185, 129, 0.3); }
+.text-glow { text-shadow: 0 0 28px rgba(34, 211, 238, 0.5); }
+
+/* Smooth Webflow Transitions */
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 /* Route line animation */
 @keyframes dash {

@@ -6,6 +6,7 @@ import { getCargoForecast } from '@/lib/api';
 import { CargoDemandPrediction } from '@/types';
 import { CargoDemandChart } from '@/components/maritime/CargoDemandChart';
 import { AIInsight } from '@/components/maritime/AIInsight';
+import { PageHero } from '@/components/maritime/PageHero';
 
 const COMMODITIES = ['Coal', 'Iron Ore', 'Limestone', 'Fertilizer', 'Grain'];
 
@@ -55,27 +56,29 @@ export default function CargoPage() {
   const urgency = covDays <= 10 ? 'HIGH' : covDays <= 15 ? 'MEDIUM' : 'NORMAL';
 
   return (
-    <div className="space-y-6">
-      {/* Hero Header with Container Port Photography */}
-      <div className="relative rounded-2xl overflow-hidden border border-electric/20" style={{ height: 180 }}>
-        <img
-          src="https://images.unsplash.com/photo-1562892302-97faedd66f1c?w=1200&h=300&fit=crop&auto=format"
-          alt="Aerial view of cargo containers and cranes at port"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-ocean-950 via-ocean-950/80 to-ocean-950/30" />
-        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-          <div className="text-[10px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-            ◆ PROCUREMENT INTELLIGENCE
-          </div>
-          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-            Bulk Cargo Intelligence & Procurement
-          </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            XGBoost demand forecast · Inventory monitoring · Timed procurement triggers
-          </p>
-        </div>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="BULK CARGO PROCUREMENT INTELLIGENCE"
+        subBadge="XGBOOST DEMAND FORECASTER"
+        titleLine1="Monitor the inventory."
+        titleLine2="Prevent the stockout."
+        description="Real-time industrial plant stockpile tracking, burn-rate telemetry, and XGBoost cargo demand forecasting for East Coast India discharge ports."
+        primaryAction={{
+          label: "Optimize Charter Allocation",
+          href: "/optimization",
+        }}
+        secondaryAction={{
+          label: "View Corridor Analytics",
+          href: "/routes",
+        }}
+        stats={[
+          { value: `${(currentInv / 1000).toFixed(0)}k MT`, label: "Current Stockpile", sublabel: `${destination}` },
+          { value: `${(projDemand / 1000).toFixed(0)}k MT`, label: "30D Projected Demand", sublabel: `${cargo} Requirement` },
+          { value: `${covDays} Days`, label: "Inventory Coverage", sublabel: covDays <= 15 ? "Stockout Alert Active" : "Adequate Buffer" },
+          { value: `${(procReq / 1000).toFixed(0)}k MT`, label: "Procurement Target", sublabel: "Next Laycan Volume" },
+        ]}
+      />
 
       {/* Commodity Selector Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">

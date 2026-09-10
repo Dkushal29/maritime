@@ -14,3 +14,4 @@ export * from './ScenarioComparison';
 export * from './CostBreakdown';
 export * from './FreightForecastChart';
 export * from './CargoDemandChart';
+export * from './PageHero';

@@ -5,6 +5,7 @@ import { getRouteAnalytics } from '@/lib/api';
 import { RouteMetric } from '@/types';
 import { RouteMap } from '@/components/maritime/RouteMap';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PageHero } from '@/components/maritime/PageHero';
 
 export default function RoutesPage() {
   const [routes, setRoutes] = useState<RouteMetric[]>([]);
@@ -32,19 +33,29 @@ export default function RoutesPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-          ◆ ROUTE INTELLIGENCE & CORRIDORS
-        </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          Route Analytics & Major Maritime Corridors
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          AI-ranked shipping routes for bulk cargo delivery to India East Coast ports
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="MARITIME SHIPPING CORRIDORS"
+        subBadge="AI ROUTE RANKING & DISTANCE"
+        titleLine1="Analyze the corridors."
+        titleLine2="Navigate the East Coast."
+        description="AI-ranked maritime corridors connecting major global origin hubs (Australia, Indonesia, South Africa) to Indian East Coast discharge terminals (Visakhapatnam, Paradip, Chennai, Haldia)."
+        primaryAction={{
+          label: "Optimize Voyage Charter",
+          href: "/optimization",
+        }}
+        secondaryAction={{
+          label: "View Freight Predictions",
+          href: "/forecast",
+        }}
+        stats={[
+          { value: `${routes.length || 6} Corridors`, label: "Monitored Sea Lanes", sublabel: "Nautical Distance Ranked" },
+          { value: "Australia -> Vizag", label: "Top Ranked Corridor", sublabel: "Suitability: 94/100" },
+          { value: "$32.20 / MT", label: "Benchmark Freight", sublabel: "Spot Laycan Level" },
+          { value: "14 - 16 Days", label: "Average Transit", sublabel: "Hay Point to Vizag" },
+        ]}
+      />
 
       {/* Global Interactive Route Corridor Map */}
       <div className="glass rounded-xl p-5 border border-electric/15">

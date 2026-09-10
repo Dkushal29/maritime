@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Database, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { PageHero } from '@/components/maritime/PageHero';
 
 const SOURCES = [
   {
@@ -74,19 +75,29 @@ export default function SourcesPage() {
   const [activeMode, setActiveMode] = useState<'DEMO' | 'LIVE'>('DEMO');
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-          ◆ DATA PROVENANCE & AUDIT TRAIL
-        </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          Data Sources & Model Inputs
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Transparent data provenance powering MARITIME AI predictive models and optimization engines
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="DATA PROVENANCE & AUDIT TRAIL"
+        subBadge="TRANSPARENT INGESTION REGISTRY"
+        titleLine1="Verify the data."
+        titleLine2="Trust the decision."
+        description="Transparent data audit trail across Baltic Exchange indices, Indian Ports Association feeds, Ministry of Shipping records, and satellite AIS positioning."
+        primaryAction={{
+          label: "Inspect Model Telemetry",
+          href: "/analytics",
+        }}
+        secondaryAction={{
+          label: "View Predictive Forecasts",
+          href: "/forecast",
+        }}
+        stats={[
+          { value: `${SOURCES.length || 8} Feeds`, label: "Connected Ingestion Feeds", sublabel: "Freight, Fuel, Congestion" },
+          { value: "Daily / Realtime", label: "Refresh Cadence", sublabel: "Automated Pipeline" },
+          { value: "100% Audited", label: "Traceable Provenance", sublabel: "Zero Fabricated Inputs" },
+          { value: "Production Ready", label: "Connector Architecture", sublabel: "REST / WebSocket Ready" },
+        ]}
+      />
 
       {/* Data Mode Banner (DEMO vs LIVE) */}
       <div className="rounded-2xl p-6 bg-gradient-to-r from-ocean-900 via-ocean-800 to-ocean-900 border border-electric/25 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-xl">

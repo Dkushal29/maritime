@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { getAlerts } from '@/lib/api';
 import { AlertItem } from '@/types';
 import { AlertCard } from '@/components/maritime/AlertCard';
+import { PageHero } from '@/components/maritime/PageHero';
 
 const CATEGORIES = ['All', 'CRITICAL', 'WARNING', 'OPPORTUNITY', 'INFO'];
 
@@ -33,19 +34,29 @@ export default function AlertsPage() {
       });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
-          ◆ OPERATIONAL RISK CENTER
-        </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-100 m-0">
-          Alerts & Risk Notifications
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Automated warnings for freight spikes, low inventory stock, fleet availability and weather
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Cinematic Hero Banner matching Landing Page */}
+      <PageHero
+        badge="OPERATIONAL RISK & ANOMALY DETECTION"
+        subBadge="REAL-TIME TELEMETRY TRIGGERS"
+        titleLine1="Track the risks."
+        titleLine2="Act on real-time spikes."
+        description="Automated early warnings for freight rate surges, bunker fuel escalation, critical plant inventory depletion, and port congestion bottlenecks across East Coast India."
+        primaryAction={{
+          label: "Execute Mitigation Strategy",
+          href: "/optimization",
+        }}
+        secondaryAction={{
+          label: "Simulate Risk Trade-Offs",
+          href: "/simulator",
+        }}
+        stats={[
+          { value: `${alerts.length || 5} Active`, label: "Risk Telemetry Alerts", sublabel: "Real-time Feed" },
+          { value: "2 Critical", label: "High Severity Spikes", sublabel: "Urgent Mitigation" },
+          { value: "11 Days", label: "Stockpile Buffer", sublabel: "Vizag Coal Burn-Rate" },
+          { value: "+21.6%", label: "Freight Volatility", sublabel: "30-Day Forward Curve" },
+        ]}
+      />
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
