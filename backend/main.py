@@ -72,7 +72,7 @@ from src.explainability import get_freight_feature_importance
 
 # Load environment configuration
 load_dotenv()
-API_HOST = os.getenv("API_HOST", "0.0.0.0")
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
 API_PORT = int(os.getenv("API_PORT", "8000"))
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 DATA_MODE = os.getenv("DATA_MODE", "REALTIME_INFERENCE")

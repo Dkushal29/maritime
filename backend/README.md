@@ -229,13 +229,13 @@ The script:
 ## 8. Starting the FastAPI Server
 
 ```powershell
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-- **Root:** [http://localhost:8000/](http://localhost:8000/)
-- **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
-- **Health Check:** [http://localhost:8000/health](http://localhost:8000/health)
+- **Root:** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+- **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **ReDoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+- **Health Check:** [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
 
 ---
 
@@ -256,7 +256,7 @@ All unit and integration tests verify:
 ## 10. Frontend Integration
 
 The Next.js 14 frontend in `C:\Maritime` communicates directly with this API through `lib/api.ts`:
-- Environment variable: `NEXT_PUBLIC_API_URL=http://localhost:8000`
+- Environment variable: `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000`
 - To run the frontend concurrently:
   ```powershell
   cd C:\Maritime
