@@ -13,11 +13,9 @@ const MaritimeLeafletMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[560px] rounded-xl bg-ocean-950/80 border border-electric/20 flex flex-col items-center justify-center gap-3 animate-pulse">
-        <div className="w-10 h-10 rounded-full border-2 border-cyan/40 border-t-cyan animate-spin" />
-        <span className="text-xs font-mono text-cyan tracking-wider">
-          INITIALIZING INDO-PACIFIC MARITIME SATELLITE TILES...
-        </span>
+      <div className="w-full h-[440px] rounded-lg bg-[#0B1726] border border-[#294154] flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#294154] border-t-[#35B8A6] animate-spin" />
+        <span className="text-xs font-mono text-[#91A6B8]">Loading map…</span>
       </div>
     ),
   }
@@ -85,7 +83,7 @@ export default function RoutesPage() {
               Indo-Pacific to East Coast India Shipping Lanes
             </h3>
             <p className="text-xs text-slate-400 mt-1 font-sans">
-              Live vessel tracking, shipping routes, and corridor analysis using real-time marine data
+              Shipping route corridors and port analytics. Vessel positions shown only when AIS data is available.
             </p>
           </div>
           <div className="sm:text-right shrink-0">
@@ -217,10 +215,10 @@ export default function RoutesPage() {
                   <span className="text-cyan font-bold">${selectedRoute.avgFreightRate}/MT</span>
                 </div>
                 <div className="flex justify-between py-1.5">
-                  <span className="text-slate-400">Est. Total Landed Cost:</span>
-                  <span className="text-emerald-400 font-bold">
-                    ${((selectedRoute.avgFreightRate * 230000) / 1000000).toFixed(2)}M
-                  </span>
+                   <span className="text-slate-400">Est. Freight for 230k MT:</span>
+                   <span className="text-emerald-400 font-bold">
+                     ${(((Number(selectedRoute.avgFreightRate) || 32.5) * 230000) / 1_000_000).toFixed(2)}M
+                   </span>
                 </div>
                 <div className="flex justify-between py-1.5">
                   <span className="text-slate-400">Port Congestion Level:</span>
