@@ -15,3 +15,4 @@ export * from './CostBreakdown';
 export * from './FreightForecastChart';
 export * from './CargoDemandChart';
 export * from './PageHero';
+export * from './MaritimeLeafletMap';

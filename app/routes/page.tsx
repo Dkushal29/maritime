@@ -3,9 +3,25 @@
 import React, { useState, useEffect } from 'react';
 import { getRouteAnalytics } from '@/lib/api';
 import { RouteMetric } from '@/types';
-import { RouteMap } from '@/components/maritime/RouteMap';
+import dynamic from 'next/dynamic';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PageHero } from '@/components/maritime/PageHero';
+
+// Dynamically import Leaflet maritime map with SSR disabled to prevent window/document errors
+const MaritimeLeafletMap = dynamic(
+  () => import('@/components/maritime/MaritimeLeafletMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[560px] rounded-xl bg-ocean-950/80 border border-electric/20 flex flex-col items-center justify-center gap-3 animate-pulse">
+        <div className="w-10 h-10 rounded-full border-2 border-cyan/40 border-t-cyan animate-spin" />
+        <span className="text-xs font-mono text-cyan tracking-wider">
+          INITIALIZING INDO-PACIFIC MARITIME SATELLITE TILES...
+        </span>
+      </div>
+    ),
+  }
+);
 
 export default function RoutesPage() {
   const [routes, setRoutes] = useState<RouteMetric[]>([]);
@@ -58,26 +74,42 @@ export default function RoutesPage() {
       />
 
       {/* Global Interactive Route Corridor Map */}
-      <div className="glass rounded-xl p-5 border border-electric/15">
-        <div className="flex items-center justify-between mb-4">
+      <div className="glass rounded-xl p-5 border border-electric/20 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-electric/15">
           <div>
-            <div className="text-[10px] text-cyan font-mono tracking-wider uppercase mb-0.5 font-bold">
-              ◆ CORRIDOR MAPPING
+            <div className="flex items-center gap-1.5 text-[10px] text-cyan font-mono tracking-wider uppercase font-bold mb-1">
+              <span className="w-1.5 h-1.5 bg-cyan rounded-xs shadow-[0_0_8px_#00F0FF]"></span>
+              <span>CORRIDOR MAPPING</span>
             </div>
-            <h3 className="font-display font-bold text-base text-slate-100 m-0">
+            <h3 className="font-display font-bold text-lg text-slate-100 m-0">
               Indo-Pacific to East Coast India Shipping Lanes
             </h3>
+            <p className="text-xs text-slate-400 mt-1 font-sans">
+              Live vessel tracking, shipping routes, and corridor analysis using real-time marine data
+            </p>
           </div>
-          <span className="text-xs font-mono text-slate-400">
-            Selected: <strong className="text-cyan">{selectedRoute ? `${selectedRoute.origin} → ${selectedRoute.destination}` : 'Australia → Visakhapatnam'}</strong>
-          </span>
+          <div className="sm:text-right shrink-0">
+            <span className="text-[10px] text-slate-400 font-mono block uppercase">Selected Route</span>
+            <span className="text-xs font-mono font-bold text-cyan bg-cyan/10 px-2.5 py-1 rounded border border-cyan/25 shadow-sm inline-block">
+              {selectedRoute ? `${selectedRoute.origin} → ${selectedRoute.destination}` : 'Australia → Visakhapatnam'}
+            </span>
+          </div>
         </div>
 
-        <RouteMap
-          highlightPort={selectedRoute?.destination.toUpperCase()}
-          onSelectPort={(portName) => {
-            const matched = routes.find((r) => r.destination.toUpperCase() === portName);
+        <MaritimeLeafletMap
+          selectedRoute={selectedRoute}
+          onSelectRoute={(route) => {
+            const matched = routes.find(
+              (r) =>
+                r.origin.toLowerCase().includes(route.origin.toLowerCase()) &&
+                r.destination.toLowerCase().includes(route.destination.toLowerCase())
+            ) || routes.find(
+              (r) =>
+                r.origin.toLowerCase().includes(route.origin.toLowerCase()) ||
+                r.destination.toLowerCase().includes(route.destination.toLowerCase())
+            );
             if (matched) setSelectedRoute(matched);
+            else setSelectedRoute(route);
           }}
         />
       </div>
