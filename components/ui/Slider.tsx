@@ -20,7 +20,7 @@ export const Slider: React.FC<SliderProps> = ({
   step = 1,
   onChange,
   format = (v) => `${v}`,
-  color = '#22D3EE',
+  color = '#35B8A6',
   className = '',
 }) => {
   return (

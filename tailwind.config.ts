@@ -12,39 +12,59 @@ const config: Config = {
     extend: {
       colors: {
         ocean: {
-          950: '#020D18',
-          900: '#061525',
-          800: '#0B1F36',
-          700: '#0F2D50',
-          600: '#123B67',
+          950: '#070F1A',
+          900: '#0B1726', // Deep navy background
+          800: '#102235', // Secondary navy panels
+          700: '#162C40', // Slightly lighter cards
+          600: '#1F3B54', // Hover / elevated panels
+          500: '#294154', // Muted blue-gray borders
         },
         sea: {
-          500: '#1a4a7a',
+          500: '#1B354C',
+        },
+        // Restrained maritime palette mappings
+        teal: {
+          DEFAULT: '#35B8A6', // Main accent: muted teal
+          hover: '#2EA595',
+          dim: 'rgba(53, 184, 166, 0.15)',
+        },
+        sky: {
+          DEFAULT: '#5D9BC4', // Secondary accent: desaturated sky blue
+          hover: '#4C8AB3',
+          dim: 'rgba(93, 155, 196, 0.15)',
+        },
+        // Direct aliasing so existing components automatically use restrained tones
+        cyan: {
+          DEFAULT: '#35B8A6', // Muted teal instead of bright cyan
+          dim: '#2A9385',
+          glow: 'rgba(53, 184, 166, 0.15)',
         },
         electric: {
-          DEFAULT: '#1683FF',
-          light: '#4da3ff',
+          DEFAULT: '#5D9BC4', // Desaturated sky blue instead of neon blue
+          light: '#7AAECF',
         },
-        cyan: {
-          DEFAULT: '#22D3EE',
-          dim: '#0e9ab0',
-        },
-        aqua: '#38BDF8',
         success: {
-          DEFAULT: '#10B981',
-          dim: '#059669',
+          DEFAULT: '#6DAF91', // Muted green
+          dim: 'rgba(109, 175, 145, 0.15)',
         },
-        warning: '#F59E0B',
-        critical: '#EF4444',
-        'purple-ai': '#8B5CF6',
+        warning: {
+          DEFAULT: '#D6A24A', // Muted amber
+          dim: 'rgba(214, 162, 74, 0.15)',
+        },
+        critical: {
+          DEFAULT: '#C96B6B', // Muted red
+          dim: 'rgba(201, 107, 107, 0.15)',
+        },
         maritime: {
-          darkest: '#020D18',
-          bg: '#061525',
-          card: '#0B1F36',
-          cardBorder: 'rgba(22, 131, 255, 0.12)',
-          hover: '#0F2D50',
-          cyan: '#22D3EE',
-          cyanGlow: 'rgba(34, 211, 238, 0.2)',
+          bg: '#0B1726',
+          panel: '#102235',
+          card: '#162C40',
+          border: '#294154',
+          hover: '#1F3B54',
+          textPrimary: '#E8F0F5',
+          textSecondary: '#91A6B8',
+          teal: '#35B8A6',
+          sky: '#5D9BC4',
         },
       },
       fontFamily: {

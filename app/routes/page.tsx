@@ -130,20 +130,18 @@ export default function RoutesPage() {
               <button
                 key={route.id}
                 onClick={() => setSelectedRoute(route)}
-                className={`glass rounded-xl p-4 text-left transition-all border cursor-pointer ${
-                  isSelected
+                className={`glass rounded-xl p-4 text-left transition-all border cursor-pointer ${isSelected
                     ? 'border-cyan/50 ring-1 ring-cyan/30 bg-ocean-800/60 shadow-lg shadow-cyan/10'
                     : 'border-electric/15 hover:border-electric/30 hover:bg-ocean-800/40'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-4">
                   {/* Rank Badge */}
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-sm shrink-0 ${
-                      isRec
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-sm shrink-0 ${isRec
                         ? 'bg-cyan/20 text-cyan border border-cyan/40 shadow-md'
                         : 'bg-ocean-900 border border-electric/20 text-slate-400'
-                    }`}
+                      }`}
                   >
                     #{idx + 1}
                   </div>

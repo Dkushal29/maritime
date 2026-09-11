@@ -188,14 +188,14 @@ export default function DashboardPage() {
   // Dynamic mini chart points: Real historical points -> Spot anchor -> Real model trajectory
   const histPoints = (freight.historical && freight.historical.length > 0)
     ? freight.historical.slice(-5).map((h) => ({
-        d: h.date.length > 5 ? h.date.substring(5) : h.date,
-        val: h.rate,
-      }))
+      d: h.date.length > 5 ? h.date.substring(5) : h.date,
+      val: h.rate,
+    }))
     : [
-        { d: '06-01', val: +(freight.currentRate * 0.94).toFixed(1) },
-        { d: '07-01', val: +(freight.currentRate * 0.97).toFixed(1) },
-        { d: '08-01', val: +(freight.currentRate * 0.99).toFixed(1) },
-      ];
+      { d: '06-01', val: +(freight.currentRate * 0.94).toFixed(1) },
+      { d: '07-01', val: +(freight.currentRate * 0.97).toFixed(1) },
+      { d: '08-01', val: +(freight.currentRate * 0.99).toFixed(1) },
+    ];
 
   const predPoints = (forecast30d?.predictions || freight.predictions || []).map((p) => ({
     d: p.date.length > 5 ? p.date.substring(5) : p.date,
@@ -329,11 +329,11 @@ export default function DashboardPage() {
               recommendation.supportingReasons.length > 0
                 ? recommendation.supportingReasons
                 : [
-                    'Freight projected to increase 11.3% over 30 days',
-                    'Vessel availability declining across Indian Ocean',
-                    'Cargo demand rising ahead of monsoon lull',
-                    'Early charter locks in optimal landed margin',
-                  ]
+                  'Freight projected to increase 11.3% over 30 days',
+                  'Vessel availability declining across Indian Ocean',
+                  'Cargo demand rising ahead of monsoon lull',
+                  'Early charter locks in optimal landed margin',
+                ]
             }
             expectedSavings={`$${(recommendation.expectedSavings / 1000).toFixed(0)}K`}
             confidence={`${recommendation.confidence}%`}
@@ -450,16 +450,14 @@ export default function DashboardPage() {
                         <button
                           key={cat}
                           onClick={() => setAlertFilter(cat)}
-                          className={`flex-1 py-1 rounded text-[10px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                            alertFilter === cat
+                          className={`flex-1 py-1 rounded text-[10px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${alertFilter === cat
                               ? 'bg-electric text-white shadow-sm'
                               : 'text-slate-400 hover:text-slate-200 hover:bg-ocean-800/60'
-                          }`}
+                            }`}
                         >
                           <span>{cat}</span>
-                          <span className={`text-[9px] px-1.5 py-0.1 rounded-full ${
-                            alertFilter === cat ? 'bg-white/20 text-white' : 'bg-ocean-900 text-slate-400'
-                          }`}>
+                          <span className={`text-[9px] px-1.5 py-0.1 rounded-full ${alertFilter === cat ? 'bg-white/20 text-white' : 'bg-ocean-900 text-slate-400'
+                            }`}>
                             {count}
                           </span>
                         </button>

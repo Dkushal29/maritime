@@ -34,7 +34,7 @@ export const VesselCard: React.FC<VesselCardProps> = ({
 }) => {
   const score = vessel.score ?? 85;
   const scoreColor =
-    score >= 90 ? '#10B981' : score >= 80 ? '#22D3EE' : score >= 70 ? '#F59E0B' : '#EF4444';
+    score >= 90 ? '#6DAF91' : score >= 80 ? '#35B8A6' : score >= 70 ? '#D6A24A' : '#C96B6B';
 
   const defaultImg =
     vessel.type === 'Capesize'
@@ -56,22 +56,22 @@ export const VesselCard: React.FC<VesselCardProps> = ({
     return (
       <div
         onClick={onClick}
-        className={`glass rounded-xl p-3 flex items-center gap-3 transition-all cursor-pointer border ${
+        className={`bg-[#102235] rounded-lg p-3 flex items-center gap-3 transition-colors cursor-pointer border ${
           selected
-            ? 'bg-electric/15 border-electric/40 shadow-lg shadow-electric/15'
-            : 'hover:border-electric/30 hover:bg-ocean-800/50'
+            ? 'bg-[#162C40] border-[#35B8A6]'
+            : 'border-[#294154] hover:border-[#35B8A6]/50 hover:bg-[#162C40]'
         }`}
       >
         <img
           src={imgUrl}
           alt={vessel.name}
-          className="w-20 h-14 rounded-lg object-cover shrink-0"
+          className="w-20 h-14 rounded-md object-cover shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <div className="font-display font-bold text-sm text-slate-100 truncate">
+          <div className="font-display font-bold text-sm text-[#E8F0F5] truncate">
             {vessel.name}
           </div>
-          <div className="text-[11px] font-mono text-slate-400">
+          <div className="text-[11px] font-mono text-[#91A6B8]">
             {vessel.type} · {dwtDisplay}
           </div>
         </div>
@@ -79,7 +79,7 @@ export const VesselCard: React.FC<VesselCardProps> = ({
           <div className="font-mono text-sm font-bold" style={{ color: scoreColor }}>
             {score}
           </div>
-          <div className="text-[9px] font-mono text-slate-500">SUITABILITY</div>
+          <div className="text-[9px] font-mono text-[#91A6B8]">SUITABILITY</div>
         </div>
       </div>
     );
@@ -88,24 +88,24 @@ export const VesselCard: React.FC<VesselCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`glass rounded-xl overflow-hidden flex flex-col transition-all duration-200 cursor-pointer border ${
+      className={`bg-[#102235] rounded-lg overflow-hidden flex flex-col transition-colors cursor-pointer border ${
         selected
-          ? 'border-cyan/50 shadow-xl shadow-cyan/10 ring-1 ring-cyan/30'
-          : 'hover:border-electric/40 hover:bg-ocean-800/40'
+          ? 'border-[#35B8A6] bg-[#162C40]'
+          : 'border-[#294154] hover:border-[#35B8A6]/50 hover:bg-[#162C40]'
       }`}
     >
       {/* Vessel Imagery */}
-      <div className="relative h-36 w-full overflow-hidden bg-ocean-950">
+      <div className="relative h-36 w-full overflow-hidden bg-[#0B1726]">
         <img
           src={imgUrl}
           alt={vessel.name}
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ocean-950 via-ocean-950/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#102235] via-[#102235]/40 to-transparent" />
 
         {/* Score Badge */}
-        <div className="absolute top-2.5 right-2.5 px-2 py-1 rounded-md bg-ocean-950/80 backdrop-blur-md border border-white/10 flex items-center gap-1.5">
-          <span className="text-[9px] font-mono text-slate-400">SCORE</span>
+        <div className="absolute top-2.5 right-2.5 px-2 py-1 rounded-md bg-[#0B1726]/85 border border-[#294154] flex items-center gap-1.5">
+          <span className="text-[9px] font-mono text-[#91A6B8]">SCORE</span>
           <span className="font-mono font-bold text-xs" style={{ color: scoreColor }}>
             {score}
           </span>
@@ -120,30 +120,30 @@ export const VesselCard: React.FC<VesselCardProps> = ({
       {/* Info Body */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <h4 className="font-display font-bold text-base text-slate-100 m-0 mb-1 truncate">
+          <h4 className="font-display font-bold text-base text-[#E8F0F5] m-0 mb-1 truncate">
             {vessel.name}
           </h4>
-          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 mb-3">
+          <div className="flex items-center gap-2 text-[11px] font-mono text-[#91A6B8] mb-3">
             <span>{vessel.type}</span>
             <span>•</span>
             <span>{dwtDisplay}</span>
             {vessel.carbon_rating && (
               <>
                 <span>•</span>
-                <span className="text-emerald-400 font-semibold">CII: {vessel.carbon_rating}</span>
+                <span className="text-[#6DAF91] font-semibold">CII: {vessel.carbon_rating}</span>
               </>
             )}
           </div>
         </div>
 
-        <div className="pt-3 border-t border-electric/10 grid grid-cols-2 gap-2 text-[11px] font-mono">
+        <div className="pt-3 border-t border-[#294154] grid grid-cols-2 gap-2 text-[11px] font-mono">
           <div>
-            <div className="text-slate-500 text-[9px] uppercase">Location</div>
-            <div className="text-slate-300 font-medium truncate">{vessel.location}</div>
+            <div className="text-[#91A6B8] text-[9px] uppercase">Location</div>
+            <div className="text-[#E8F0F5] font-medium truncate">{vessel.location}</div>
           </div>
           <div className="text-right">
-            <div className="text-slate-500 text-[9px] uppercase">Rate</div>
-            <div className="text-cyan font-bold">{rateDisplay}</div>
+            <div className="text-[#91A6B8] text-[9px] uppercase">Rate</div>
+            <div className="text-[#35B8A6] font-bold">{rateDisplay}</div>
           </div>
         </div>
       </div>

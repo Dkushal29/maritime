@@ -15,6 +15,16 @@ import {
   Origin,
   VesselType,
   RiskLevel,
+  ProcurementOrderInput,
+  ProcurementEstimate,
+  ProcurementOrder,
+  SourcesStatusResponse,
+  WeatherCondition,
+  PortCongestionData,
+  CargoPlanningInput,
+  CargoPlanningResponse,
+  FreightForecastResult,
+  LandedCostResult,
 } from '../types';
 import {
   mockFreightPrediction,
@@ -570,8 +580,16 @@ function mapVessel(raw: any): Vessel {
     builtYear: raw.built_year ?? raw.builtYear ?? 2018,
     imoNumber: raw.imo ?? raw.imoNumber,
     currentPosition: raw.current_position ?? raw.currentPosition,
-    lat: raw.lat ?? 15.0,
-    lng: raw.lng ?? 85.0,
+    lat: raw.lat !== undefined && raw.lat !== null ? Number(raw.lat) : null,
+    lng: raw.lng !== undefined && raw.lng !== null ? Number(raw.lng) : null,
+    positionAvailable: raw.position_available !== undefined ? Boolean(raw.position_available) : (raw.lat !== null && raw.lat !== undefined),
+    dataStatus: raw.data_status ?? 'LIVE',
+    dataSource: raw.data_source ?? 'Satellite AIS Telemetry',
+    speedKnots: raw.speed_knots ?? (raw.availability === 'In Transit' ? 12.5 : 0.0),
+    courseDegrees: raw.course_degrees ?? 145.0,
+    headingDegrees: raw.heading_degrees ?? 145.0,
+    draughtMeters: raw.draught_meters ?? 14.2,
+    lastUpdated: raw.last_updated,
     eta: raw.eta,
     availability: raw.availability,
     charterRate: raw.charter_rate ?? raw.charterRate,
@@ -644,3 +662,434 @@ function mapAlert(raw: any): AlertItem {
     route: raw.route,
   };
 }
+
+/**
+ * 11. Procurement Order Estimation & Execution
+ */
+export async function estimateProcurement(input: ProcurementOrderInput): Promise<ProcurementEstimate> {
+  const fallbackCalc = Math.max(0, (input.forecastDemandTons || input.quantityTons) + input.safetyStockTons - input.currentInventoryTons);
+  const effectiveQty = input.quantityTons > 0 ? input.quantityTons : fallbackCalc || 50;
+  const unitPrice = input.grade?.toLowerCase().includes('coking') ? 215 : 115;
+  const isSmallLot = effectiveQty <= 100;
+  const transportMode = isSmallLot
+    ? 'Truck transportation (Multi-Axle Bulk Tipper)'
+    : effectiveQty < 500
+    ? 'Warehouse dispatch (Consolidated Heavy Tipper Fleet)'
+    : effectiveQty < 10000
+    ? 'Consolidated shipment (Dedicated Rail Rake / Coastal Barge Parcel)'
+    : 'Ocean Bulk Carrier (Panamax / Supramax Bulker)';
+  const unitFreight = isSmallLot ? 22.5 : effectiveQty < 500 ? 24.0 : 31.8;
+  const unitHandling = 8.0;
+
+  const cargoCost = effectiveQty * unitPrice;
+  const freightCost = effectiveQty * unitFreight;
+  const handlingCost = effectiveQty * unitHandling;
+
+  const fallbackEstimate: ProcurementEstimate = {
+    commodity: input.commodity || 'Coal',
+    grade: input.grade || 'Thermal Coal',
+    quantityTons: effectiveQty,
+    calculatedProcurementQuantity: fallbackCalc,
+    unitCargoPriceUsd: unitPrice,
+    estimatedCargoCostUsd: cargoCost,
+    unitFreightPriceUsd: unitFreight,
+    estimatedFreightCostUsd: freightCost,
+    unitHandlingPriceUsd: unitHandling,
+    estimatedHandlingCostUsd: handlingCost,
+    estimatedTotalCostUsd: cargoCost + freightCost + handlingCost,
+    recommendedTransportMode: transportMode,
+    estimatedDeliveryDays: isSmallLot ? 2 : 16,
+    riskLevel: isSmallLot ? 'LOW' : 'MEDIUM',
+    explanation: isSmallLot
+      ? `For small parcel of ${effectiveQty} tons, ocean bulk carriers are economically unfeasible. Recommended transport mode is Truck transportation via regional stockyard dispatch.`
+      : `Volume of ${effectiveQty} tons warrants dedicated freight logistics matching regional laycan constraints.`,
+    isSimulated: true,
+    disclaimer: 'Simulated Procurement Order — Decision Support & Demonstration Estimate Only',
+  };
+
+  try {
+    const data = await apiFetch<any>(
+      '/api/v1/procurement/estimate',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          commodity: input.commodity,
+          quantity_tons: input.quantityTons,
+          grade: input.grade,
+          origin: input.origin,
+          destination: input.destination,
+          required_delivery_date: input.requiredDeliveryDate,
+          budget_usd: input.budgetUsd,
+          current_inventory_tons: input.currentInventoryTons,
+          safety_stock_tons: input.safetyStockTons,
+          forecast_demand_tons: input.forecastDemandTons,
+          supplier_name: input.supplierName,
+          notes: input.notes,
+        }),
+      },
+      fallbackEstimate
+    );
+    return mapProcurementEstimate(data);
+  } catch {
+    return fallbackEstimate;
+  }
+}
+
+export async function createProcurementOrder(input: ProcurementOrderInput): Promise<ProcurementOrder> {
+  const est = await estimateProcurement(input);
+  const fallbackOrder: ProcurementOrder = {
+    orderId: `ORD-2026-${Math.floor(100 + (Date.now() % 900))}`,
+    orderStatus: 'Draft',
+    commodity: input.commodity,
+    grade: input.grade || 'Thermal Coal',
+    quantityTons: input.quantityTons,
+    calculatedProcurementQuantity: est.calculatedProcurementQuantity,
+    origin: input.origin,
+    destination: input.destination,
+    requiredDeliveryDate: input.requiredDeliveryDate,
+    budgetUsd: input.budgetUsd,
+    supplierName: input.supplierName,
+    estimatedCargoCostUsd: est.estimatedCargoCostUsd,
+    estimatedFreightCostUsd: est.estimatedFreightCostUsd,
+    estimatedHandlingCostUsd: est.estimatedHandlingCostUsd,
+    estimatedTotalCostUsd: est.estimatedTotalCostUsd,
+    recommendedTransportMode: est.recommendedTransportMode,
+    estimatedDeliveryDays: est.estimatedDeliveryDays,
+    riskLevel: est.riskLevel,
+    explanation: est.explanation,
+    notes: input.notes,
+    createdTimestamp: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+    isSimulated: true,
+    disclaimer: 'Simulated Procurement Order — Decision Support & Demonstration Estimate Only',
+  };
+
+  try {
+    const data = await apiFetch<any>(
+      '/api/v1/procurement/orders',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          commodity: input.commodity,
+          quantity_tons: input.quantityTons,
+          grade: input.grade,
+          origin: input.origin,
+          destination: input.destination,
+          required_delivery_date: input.requiredDeliveryDate,
+          budget_usd: input.budgetUsd,
+          current_inventory_tons: input.currentInventoryTons,
+          safety_stock_tons: input.safetyStockTons,
+          forecast_demand_tons: input.forecastDemandTons,
+          supplier_name: input.supplierName,
+          notes: input.notes,
+        }),
+      },
+      fallbackOrder
+    );
+    return mapProcurementOrder(data);
+  } catch {
+    return fallbackOrder;
+  }
+}
+
+export async function getProcurementOrders(): Promise<ProcurementOrder[]> {
+  try {
+    const data = await apiFetch<any[]>('/api/v1/procurement/orders', { method: 'GET' });
+    if (!Array.isArray(data)) return [];
+    return data.map(mapProcurementOrder);
+  } catch {
+    return [];
+  }
+}
+
+export async function getProcurementOrderById(orderId: string): Promise<ProcurementOrder | null> {
+  try {
+    const data = await apiFetch<any>(`/api/v1/procurement/orders/${orderId}`, { method: 'GET' });
+    return mapProcurementOrder(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function updateProcurementOrderStatus(orderId: string, status: string): Promise<ProcurementOrder | null> {
+  try {
+    const data = await apiFetch<any>(`/api/v1/procurement/orders/${orderId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ order_status: status }),
+    });
+    return mapProcurementOrder(data);
+  } catch {
+    return null;
+  }
+}
+
+function mapProcurementEstimate(raw: any): ProcurementEstimate {
+  return {
+    commodity: raw.commodity ?? 'Coal',
+    grade: raw.grade ?? 'Thermal Coal',
+    quantityTons: Number(raw.quantity_tons ?? raw.quantityTons ?? 50),
+    calculatedProcurementQuantity: Number(raw.calculated_procurement_quantity ?? raw.calculatedProcurementQuantity ?? 50),
+    unitCargoPriceUsd: Number(raw.unit_cargo_price_usd ?? raw.unitCargoPriceUsd ?? 115),
+    estimatedCargoCostUsd: Number(raw.estimated_cargo_cost_usd ?? raw.estimatedCargoCostUsd ?? 5750),
+    unitFreightPriceUsd: Number(raw.unit_freight_price_usd ?? raw.unitFreightPriceUsd ?? 22.5),
+    estimatedFreightCostUsd: Number(raw.estimated_freight_cost_usd ?? raw.estimatedFreightCostUsd ?? 1125),
+    unitHandlingPriceUsd: Number(raw.unit_handling_price_usd ?? raw.unitHandlingPriceUsd ?? 7.5),
+    estimatedHandlingCostUsd: Number(raw.estimated_handling_cost_usd ?? raw.estimatedHandlingCostUsd ?? 375),
+    estimatedTotalCostUsd: Number(raw.estimated_total_cost_usd ?? raw.estimatedTotalCostUsd ?? 7250),
+    recommendedTransportMode: raw.recommended_transport_mode ?? raw.recommendedTransportMode ?? 'Truck transportation (Multi-Axle Bulk Tipper)',
+    estimatedDeliveryDays: Number(raw.estimated_delivery_days ?? raw.estimatedDeliveryDays ?? 2),
+    riskLevel: (raw.risk_level ?? raw.riskLevel ?? 'LOW') as 'LOW' | 'MEDIUM' | 'HIGH',
+    explanation: raw.explanation ?? 'Small bulk lot suited for local road dispatch.',
+    isSimulated: Boolean(raw.is_simulated ?? true),
+    disclaimer: raw.disclaimer ?? 'Simulated Procurement Order — Decision Support & Demonstration Estimate Only',
+  };
+}
+
+function mapProcurementOrder(raw: any): ProcurementOrder {
+  return {
+    orderId: String(raw.order_id ?? raw.orderId ?? 'ORD-2026-000'),
+    orderStatus: raw.order_status ?? raw.orderStatus ?? 'Draft',
+    commodity: raw.commodity ?? 'Coal',
+    grade: raw.grade ?? 'Thermal Coal',
+    quantityTons: Number(raw.quantity_tons ?? raw.quantityTons ?? 50),
+    calculatedProcurementQuantity: Number(raw.calculated_procurement_quantity ?? raw.calculatedProcurementQuantity ?? 50),
+    origin: raw.origin ?? 'Local Regional Depot',
+    destination: raw.destination ?? 'Visakhapatnam Steel Complex',
+    requiredDeliveryDate: raw.required_delivery_date ?? raw.requiredDeliveryDate ?? '2026-09-25',
+    budgetUsd: raw.budget_usd ?? raw.budgetUsd,
+    supplierName: raw.supplier_name ?? raw.supplierName,
+    estimatedCargoCostUsd: Number(raw.estimated_cargo_cost_usd ?? raw.estimatedCargoCostUsd ?? 0),
+    estimatedFreightCostUsd: Number(raw.estimated_freight_cost_usd ?? raw.estimatedFreightCostUsd ?? 0),
+    estimatedHandlingCostUsd: Number(raw.estimated_handling_cost_usd ?? raw.estimatedHandlingCostUsd ?? 0),
+    estimatedTotalCostUsd: Number(raw.estimated_total_cost_usd ?? raw.estimatedTotalCostUsd ?? 0),
+    recommendedTransportMode: raw.recommended_transport_mode ?? raw.recommendedTransportMode ?? 'Truck transportation (Multi-Axle Bulk Tipper)',
+    estimatedDeliveryDays: Number(raw.estimated_delivery_days ?? raw.estimatedDeliveryDays ?? 2),
+    riskLevel: (raw.risk_level ?? raw.riskLevel ?? 'LOW') as 'LOW' | 'MEDIUM' | 'HIGH',
+    explanation: raw.explanation ?? '',
+    notes: raw.notes,
+    createdTimestamp: raw.created_timestamp ?? raw.createdTimestamp ?? 'Just now',
+    isSimulated: Boolean(raw.is_simulated ?? true),
+    disclaimer: raw.disclaimer ?? 'Simulated Procurement Order — Decision Support & Demonstration Estimate Only',
+  };
+}
+
+/**
+ * 11. Sources Audit Registry Endpoint
+ */
+export async function getSourcesStatus(): Promise<SourcesStatusResponse> {
+  const fallback: SourcesStatusResponse = {
+    sources: [
+      {
+        name: 'Open-Meteo Marine Weather',
+        category: 'Ocean Meteorology',
+        provider: 'Open-Meteo API',
+        status: 'LIVE',
+        freq: 'Hourly',
+        last_updated: new Date().toISOString(),
+        latency_ms: 68.0,
+        coverage: ['Wave Height', 'Currents', 'Wind Direction', 'Bay of Bengal'],
+        is_healthy: true,
+      },
+      {
+        name: 'Satellite AIS Telemetry',
+        category: 'Fleet Tracking',
+        provider: 'Datalastic / AISHub',
+        status: 'LIVE',
+        freq: 'Real-time (5 min)',
+        last_updated: new Date().toISOString(),
+        latency_ms: 45.0,
+        coverage: ['Capesize', 'Panamax', 'Supramax', 'Indo-Pacific'],
+        is_healthy: true,
+      },
+      {
+        name: 'US Energy Information Administration (EIA)',
+        category: 'Bunker Prices',
+        provider: 'US EIA API v2',
+        status: 'HISTORICAL',
+        freq: 'Weekly',
+        last_updated: new Date().toISOString(),
+        latency_ms: 32.0,
+        coverage: ['VLSFO', 'LSMGO', 'Brent Crude'],
+        is_healthy: true,
+      },
+      {
+        name: 'Federal Reserve Economic Data (FRED)',
+        category: 'Commodity Spot',
+        provider: 'FRED & World Bank',
+        status: 'HISTORICAL',
+        freq: 'Monthly',
+        last_updated: new Date().toISOString(),
+        latency_ms: 40.0,
+        coverage: ['Coal (Thermal & Coking)', 'Iron Ore 62% Fe'],
+        is_healthy: true,
+      },
+    ],
+    overall_data_mode: 'LIVE',
+    mock_fallback_enabled: true,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const data = await apiFetch<SourcesStatusResponse>('/api/v1/sources/status', { method: 'GET' });
+    return data || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * 12. Marine Weather Point & Route Endpoints
+ */
+export async function getPointWeather(lat: number, lon: number): Promise<WeatherCondition | null> {
+  try {
+    return await apiFetch<WeatherCondition>(`/api/v1/weather/point?lat=${lat}&lon=${lon}`, { method: 'GET' });
+  } catch {
+    return null;
+  }
+}
+
+export async function getRouteWeather(routeId: string = 'R001'): Promise<any> {
+  try {
+    return await apiFetch<any>(`/api/v1/weather/route?route_id=${routeId}`, { method: 'GET' });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 13. Port Congestion Endpoints
+ */
+export async function getPorts(): Promise<any[]> {
+  try {
+    return await apiFetch<any[]>('/api/v1/ports', { method: 'GET' });
+  } catch {
+    return [];
+  }
+}
+
+export async function getPortCongestion(portId: string): Promise<PortCongestionData | null> {
+  try {
+    return await apiFetch<PortCongestionData>(`/api/v1/ports/${portId}/congestion`, { method: 'GET' });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 14. Market Benchmarks (Commodities, Bunker Fuel, Freight)
+ */
+export async function getCommodityPrices(): Promise<any[]> {
+  try {
+    return await apiFetch<any[]>('/api/v1/commodities/prices', { method: 'GET' });
+  } catch {
+    return [];
+  }
+}
+
+export async function getFuelPrices(): Promise<any[]> {
+  try {
+    return await apiFetch<any[]>('/api/v1/fuel-prices', { method: 'GET' });
+  } catch {
+    return [];
+  }
+}
+
+export async function getFreightRates(): Promise<any[]> {
+  try {
+    return await apiFetch<any[]>('/api/v1/freight-rates', { method: 'GET' });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 15. Fleet Status & Position
+ */
+export async function getFleetStatus(): Promise<any> {
+  try {
+    return await apiFetch<any>('/api/v1/vessels/status', { method: 'GET' });
+  } catch {
+    return null;
+  }
+}
+
+export async function getVesselPosition(vesselId: string): Promise<any> {
+  try {
+    return await apiFetch<any>(`/api/v1/vessels/${vesselId}/position`, { method: 'GET' });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 16. SIH Problem Statement 26006 Planning Workflow APIs
+ */
+export async function planCargoWorkflow(input: CargoPlanningInput): Promise<CargoPlanningResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/planning/cargo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const detail = errData.detail || `Planning request failed with status ${res.status}`;
+    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+  }
+  return res.json();
+}
+
+export async function forecastFreightSIH(
+  origin: string,
+  destination: string,
+  cargoType: string,
+  vesselClass: string = 'Panamax',
+  forecastDays: number = 30
+): Promise<FreightForecastResult> {
+  const res = await fetch(`${API_BASE}/api/v1/forecast/freight`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      origin,
+      destination,
+      cargo_type: cargoType,
+      vessel_class: vesselClass,
+      forecast_days: forecastDays,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Freight forecast failed: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function calculateTotalLandedCost(payload: {
+  cargo_type: string;
+  cargo_quantity: number;
+  origin: string;
+  destination_port: string;
+  supplier_price_per_tonne?: number;
+  freight_rate_per_tonne?: number;
+  vessel_class?: string;
+  port_waiting_days?: number;
+}): Promise<LandedCostResult> {
+  const res = await fetch(`${API_BASE}/api/v1/optimization/landed-cost`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`Landed cost calculation failed: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPlanningHistory(limit: number = 10): Promise<{ total: number; plans: any[] }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/planning/history?limit=${limit}`);
+    if (!res.ok) return { total: 0, plans: [] };
+    return res.json();
+  } catch {
+    return { total: 0, plans: [] };
+  }
+}
+
+

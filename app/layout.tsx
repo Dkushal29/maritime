@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-[#061525] text-slate-100 antialiased min-h-screen overflow-x-hidden">
+      <body className="bg-[#0B1726] text-[#E8F0F5] antialiased min-h-screen overflow-x-hidden">
         <AppShell>{children}</AppShell>
       </body>
     </html>

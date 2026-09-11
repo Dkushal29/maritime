@@ -28,85 +28,85 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onAction }) => {
   const config = isCrit
     ? {
         label: 'CRITICAL',
-        color: '#EF4444',
-        borderClass: 'border-l-rose-500',
-        badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+        color: '#C96B6B',
+        borderClass: 'border-l-[#C96B6B]',
+        badgeBg: 'bg-[#C96B6B]/15 text-[#C96B6B] border-[#C96B6B]/40',
         icon: ShieldAlert,
       }
     : isWarn
     ? {
         label: 'WARNING',
-        color: '#F59E0B',
-        borderClass: 'border-l-amber-500',
-        badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+        color: '#D6A24A',
+        borderClass: 'border-l-[#D6A24A]',
+        badgeBg: 'bg-[#D6A24A]/15 text-[#D6A24A] border-[#D6A24A]/40',
         icon: AlertTriangle,
       }
     : isOpp
     ? {
         label: 'OPPORTUNITY',
-        color: '#10B981',
-        borderClass: 'border-l-emerald-500',
-        badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        color: '#6DAF91',
+        borderClass: 'border-l-[#6DAF91]',
+        badgeBg: 'bg-[#6DAF91]/15 text-[#6DAF91] border-[#6DAF91]/40',
         icon: Sparkles,
       }
     : {
         label: 'INFO',
-        color: '#06B6D4',
-        borderClass: 'border-l-cyan-500',
-        badgeBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        color: '#5D9BC4',
+        borderClass: 'border-l-[#5D9BC4]',
+        badgeBg: 'bg-[#5D9BC4]/15 text-[#5D9BC4] border-[#5D9BC4]/40',
         icon: Info,
       };
 
   const Icon = config.icon;
-  const typeBadge = (alert.type || 'Operational Telemetry').toUpperCase();
+  const typeBadge = (alert.type || 'Operational').toUpperCase();
 
   return (
     <div
-      className={`glass rounded-xl p-4 transition-all hover:bg-ocean-800/60 border border-electric/15 border-l-4 ${config.borderClass}`}
+      className={`bg-[#102235] rounded-lg p-3.5 transition-colors hover:bg-[#162C40] border border-[#294154] border-l-4 ${config.borderClass}`}
     >
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Condition / Severity Badge */}
           <span
-            className={`text-[10px] font-mono px-2.5 py-0.5 rounded font-extrabold border flex items-center gap-1.5 tracking-wider ${config.badgeBg}`}
+            className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold border flex items-center gap-1.5 tracking-wide ${config.badgeBg}`}
           >
             <Icon className="w-3.5 h-3.5 shrink-0" />
             {config.label}
           </span>
 
           {/* Type Tag */}
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-ocean-900/90 text-slate-300 border border-electric/25 font-semibold">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#162C40] text-[#91A6B8] border border-[#294154]">
             {typeBadge}
           </span>
 
           {/* Route or Location */}
           {alert.route && (
-            <span className="text-xs text-cyan font-mono font-medium">
+            <span className="text-xs text-[#35B8A6] font-mono">
               • {alert.route}
             </span>
           )}
         </div>
 
-        <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap">
+        <span className="text-[11px] font-mono text-[#91A6B8] whitespace-nowrap">
           {alert.time || alert.timestamp || 'Just now'}
         </span>
       </div>
 
-      <h4 className="font-display font-bold text-sm text-slate-100 mb-1">
+      <h4 className="font-display font-semibold text-sm text-[#E8F0F5] mb-1">
         {alert.title}
       </h4>
 
       {alert.description && (
-        <p className="text-xs text-slate-300 leading-relaxed mb-3 font-sans">
+        <p className="text-xs text-[#91A6B8] leading-relaxed mb-3 font-sans">
           {alert.description}
         </p>
       )}
 
       {alert.action && (
-        <div className="flex items-center justify-between pt-2.5 border-t border-electric/10 mt-2">
-          <div className="text-[11px] font-mono text-slate-300 flex items-center gap-1.5 flex-1 min-w-0">
-            <span className="text-cyan font-bold shrink-0">↳ ACTION:</span>
-            <span className="truncate">{alert.action}</span>
+        <div className="flex items-center justify-between pt-2.5 border-t border-[#294154] mt-2">
+          <div className="text-[11px] font-mono text-[#91A6B8] flex items-center gap-1.5 flex-1 min-w-0">
+            <span className="text-[#35B8A6] font-semibold shrink-0">ACTION:</span>
+            <span className="truncate text-[#E8F0F5]">{alert.action}</span>
           </div>
           {onAction && (
             <button

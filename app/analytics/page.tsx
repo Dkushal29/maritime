@@ -123,185 +123,181 @@ export default function AdvancedAnalyticsPage() {
       {/* Top Models Performance Strip */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* 1. XGBoost Freight Model Card */}
-        <div className="glass rounded-xl p-4 border border-cyan/25 font-mono text-xs flex flex-col justify-between">
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154] font-mono text-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-display font-bold text-xs text-slate-100 uppercase">
+              <span className="font-display font-bold text-xs text-[#E8F0F5] uppercase">
                 XGBoost Freight
               </span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan/20 text-cyan border border-cyan/40 font-bold">
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#35B8A6]/15 text-[#35B8A6] border border-[#35B8A6]/30 font-semibold">
                 Available
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 mb-3">Covariate regression on maritime market signals</p>
+            <p className="text-[10px] text-[#91A6B8] mb-3">Covariate regression on maritime market signals</p>
 
-            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-ocean-950/70 border border-electric/15 mb-3">
+            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-md bg-[#162C40] border border-[#294154] mb-3">
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">MAE</div>
-                <div className="text-xs font-bold text-cyan">
+                <div className="text-[8px] text-[#91A6B8] uppercase">MAE</div>
+                <div className="text-xs font-bold text-[#35B8A6]">
                   ${metrics?.freightModel.mae ? metrics.freightModel.mae.toFixed(2) : '0.89'}/MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">RMSE</div>
-                <div className="text-xs font-bold text-slate-200">
+                <div className="text-[8px] text-[#91A6B8] uppercase">RMSE</div>
+                <div className="text-xs font-bold text-[#E8F0F5]">
                   ${metrics?.freightModel.rmse ? metrics.freightModel.rmse.toFixed(2) : '1.14'}/MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">R² SCORE</div>
-                <div className="text-xs font-bold text-emerald-400">
+                <div className="text-[8px] text-[#91A6B8] uppercase">R² SCORE</div>
+                <div className="text-xs font-bold text-[#6DAF91]">
                   {metrics?.freightModel.r2 ? metrics.freightModel.r2.toFixed(3) : '0.993'}
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">FEATURES</div>
-                <div className="text-xs font-bold text-purple-ai">
+                <div className="text-[8px] text-[#91A6B8] uppercase">FEATURES</div>
+                <div className="text-xs font-bold text-[#5D9BC4]">
                   {metrics?.freightModel.featureCount || 16}
                 </div>
               </div>
             </div>
           </div>
-          <div className="text-[9px] text-slate-400 pt-2 border-t border-electric/10">
+          <div className="text-[9px] text-[#91A6B8] pt-2 border-t border-[#294154]">
             Window: 2018-2025 · Split: Chronological
           </div>
         </div>
 
         {/* 2. Chronos-Bolt Small Card */}
-        <div className="glass rounded-xl p-4 border border-purple-ai/25 font-mono text-xs flex flex-col justify-between bg-purple-ai/5">
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154] font-mono text-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-display font-bold text-xs text-purple-ai uppercase">
+              <span className="font-display font-bold text-xs text-[#5D9BC4] uppercase">
                 Chronos-Bolt Small
               </span>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
-                metrics?.chronosModel?.status === 'Available'
-                  ? 'bg-purple-ai/20 text-purple-ai border-purple-ai/40'
-                  : 'bg-amber-400/20 text-amber-400 border-amber-400/40'
-              }`}>
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold border bg-[#5D9BC4]/15 text-[#5D9BC4] border-[#5D9BC4]/30">
                 {metrics?.chronosModel?.status || 'Available'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 mb-3">Autogluon zero-shot univariate time-series model</p>
+            <p className="text-[10px] text-[#91A6B8] mb-3">Autogluon zero-shot univariate time-series model</p>
 
-            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-ocean-950/70 border border-purple-ai/20 mb-3">
+            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-md bg-[#162C40] border border-[#294154] mb-3">
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">TEST MAE</div>
-                <div className="text-xs font-bold text-purple-ai">
+                <div className="text-[8px] text-[#91A6B8] uppercase">TEST MAE</div>
+                <div className="text-xs font-bold text-[#5D9BC4]">
                   ${metrics?.chronosModel?.mae ? metrics.chronosModel.mae.toFixed(2) : '1.86'}/MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">TEST RMSE</div>
-                <div className="text-xs font-bold text-slate-200">
+                <div className="text-[8px] text-[#91A6B8] uppercase">TEST RMSE</div>
+                <div className="text-xs font-bold text-[#E8F0F5]">
                   ${metrics?.chronosModel?.rmse ? metrics.chronosModel.rmse.toFixed(2) : '2.29'}/MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">TEST MAPE</div>
-                <div className="text-xs font-bold text-emerald-400">
+                <div className="text-[8px] text-[#91A6B8] uppercase">TEST MAPE</div>
+                <div className="text-xs font-bold text-[#6DAF91]">
                   {metrics?.chronosModel?.mape ? `${metrics.chronosModel.mape.toFixed(1)}%` : '4.6%'}
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">QUANTILES</div>
-                <div className="text-xs font-bold text-cyan">
+                <div className="text-[8px] text-[#91A6B8] uppercase">QUANTILES</div>
+                <div className="text-xs font-bold text-[#35B8A6]">
                   P10 / P50 / P90
                 </div>
               </div>
             </div>
           </div>
-          <div className="text-[9px] text-slate-400 pt-2 border-t border-electric/10">
+          <div className="text-[9px] text-[#91A6B8] pt-2 border-t border-[#294154]">
             Hugging Face: autogluon/chronos-bolt-small
           </div>
         </div>
 
         {/* 3. Multi-Model Ensemble Card */}
-        <div className="glass rounded-xl p-4 border border-emerald-500/30 font-mono text-xs flex flex-col justify-between bg-ocean-800/30 ring-1 ring-emerald-500/20">
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#35B8A6]/40 font-mono text-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-display font-bold text-xs text-emerald-400 uppercase">
+              <span className="font-display font-bold text-xs text-[#6DAF91] uppercase">
                 Ensemble Model
               </span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold">
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#6DAF91]/15 text-[#6DAF91] border border-[#6DAF91]/30 font-semibold">
                 {metrics?.ensembleModel?.status || 'Active'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 mb-3">Weighted blend: 60% XGBoost + 40% Chronos-Bolt</p>
+            <p className="text-[10px] text-[#91A6B8] mb-3">Weighted blend: 60% XGBoost + 40% Chronos-Bolt</p>
 
-            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-ocean-950/70 border border-emerald-500/20 mb-3">
+            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-md bg-[#162C40] border border-[#294154] mb-3">
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">TEST MAE</div>
-                <div className="text-xs font-bold text-emerald-400">
+                <div className="text-[8px] text-[#91A6B8] uppercase">TEST MAE</div>
+                <div className="text-xs font-bold text-[#6DAF91]">
                   ${metrics?.ensembleModel?.mae ? metrics.ensembleModel.mae.toFixed(2) : '1.14'}/MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">TEST RMSE</div>
-                <div className="text-xs font-bold text-slate-200">
+                <div className="text-[8px] text-[#91A6B8] uppercase">TEST RMSE</div>
+                <div className="text-xs font-bold text-[#E8F0F5]">
                   ${metrics?.ensembleModel?.rmse ? metrics.ensembleModel.rmse.toFixed(2) : '1.48'}/MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">TEST MAPE</div>
-                <div className="text-xs font-bold text-emerald-400">
+                <div className="text-[8px] text-[#91A6B8] uppercase">TEST MAPE</div>
+                <div className="text-xs font-bold text-[#6DAF91]">
                   {metrics?.ensembleModel?.mape ? `${metrics.ensembleModel.mape.toFixed(1)}%` : '3.1%'}
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">PRED INTERVAL</div>
-                <div className="text-xs font-bold text-cyan">
+                <div className="text-[8px] text-[#91A6B8] uppercase">PRED INTERVAL</div>
+                <div className="text-xs font-bold text-[#35B8A6]">
                   P10 — P90
                 </div>
               </div>
             </div>
           </div>
-          <div className="text-[9px] text-slate-400 pt-2 border-t border-electric/10">
+          <div className="text-[9px] text-[#91A6B8] pt-2 border-t border-[#294154]">
             Primary Decision Feed for MILP Optimizer
           </div>
         </div>
 
         {/* 4. Cargo Demand Model Card */}
-        <div className="glass rounded-xl p-4 border border-blue-500/25 font-mono text-xs flex flex-col justify-between">
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154] font-mono text-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-display font-bold text-xs text-slate-100 uppercase">
+              <span className="font-display font-bold text-xs text-[#E8F0F5] uppercase">
                 Cargo Demand Model
               </span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/40 font-bold">
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D6A24A]/15 text-[#D6A24A] border border-[#D6A24A]/30 font-semibold">
                 Available
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 mb-3">Port throughput & inventory depletion XGBoost model</p>
+            <p className="text-[10px] text-[#91A6B8] mb-3">Port throughput & inventory depletion XGBoost model</p>
 
-            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-ocean-950/70 border border-electric/15 mb-3">
+            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-md bg-[#162C40] border border-[#294154] mb-3">
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">MAE</div>
-                <div className="text-xs font-bold text-cyan">
+                <div className="text-[8px] text-[#91A6B8] uppercase">MAE</div>
+                <div className="text-xs font-bold text-[#35B8A6]">
                   {metrics?.demandModel.mae ? Math.round(metrics.demandModel.mae).toLocaleString() : '7,902'} MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">RMSE</div>
-                <div className="text-xs font-bold text-slate-200">
+                <div className="text-[8px] text-[#91A6B8] uppercase">RMSE</div>
+                <div className="text-xs font-bold text-[#E8F0F5]">
                   {metrics?.demandModel.rmse ? Math.round(metrics.demandModel.rmse).toLocaleString() : '9,780'} MT
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">R² SCORE</div>
-                <div className="text-xs font-bold text-emerald-400">
+                <div className="text-[8px] text-[#91A6B8] uppercase">R² SCORE</div>
+                <div className="text-xs font-bold text-[#6DAF91]">
                   {metrics?.demandModel.r2 ? metrics.demandModel.r2.toFixed(3) : '0.986'}
                 </div>
               </div>
               <div>
-                <div className="text-[8px] text-slate-500 uppercase">FEATURES</div>
-                <div className="text-xs font-bold text-purple-ai">
+                <div className="text-[8px] text-[#91A6B8] uppercase">FEATURES</div>
+                <div className="text-xs font-bold text-[#D6A24A]">
                   {metrics?.demandModel.featureCount || 11}
                 </div>
               </div>
             </div>
           </div>
-          <div className="text-[9px] text-slate-400 pt-2 border-t border-electric/10">
+          <div className="text-[9px] text-[#91A6B8] pt-2 border-t border-[#294154]">
             Inventory depletion & procurement trigger
           </div>
         </div>
@@ -310,33 +306,34 @@ export default function AdvancedAnalyticsPage() {
       {/* Row 2: Freight Actual vs Forecast + Bunker Price Trend */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Actual vs Forecast LineChart */}
-        <div className="glass rounded-xl p-5 border border-electric/15">
+        <div className="bg-[#102235] rounded-lg p-5 border border-[#294154]">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="font-display font-bold text-sm text-slate-100 m-0">
+              <h3 className="font-display font-bold text-sm text-[#E8F0F5] m-0">
                 Freight Rate — Actual Spot vs XGBoost Forecast
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">9-month comparison over benchmark Australia → Vizag lane</p>
+              <p className="text-[11px] text-[#91A6B8] mt-0.5">9-month comparison over benchmark Australia → Vizag lane</p>
             </div>
           </div>
           <div className="h-44 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={FREIGHT_TREND} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" vertical={false} />
-                <XAxis dataKey="m" tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} domain={[22, 35]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#294154" vertical={false} />
+                <XAxis dataKey="m" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} domain={[22, 35]} />
                 <Tooltip
                   contentStyle={{
-                    background: 'rgba(11, 31, 54, 0.95)',
-                    border: '1px solid rgba(22, 131, 255, 0.25)',
+                    background: '#102235',
+                    border: '1px solid #294154',
                     borderRadius: 6,
                     fontSize: 11,
                     fontFamily: 'JetBrains Mono',
+                    color: '#E8F0F5',
                   }}
                   formatter={(v: any) => [`$${v}/MT`]}
                 />
-                <Line type="monotone" dataKey="rate" stroke="#22D3EE" strokeWidth={2} dot={{ r: 3, fill: '#22D3EE' }} />
-                <Line type="monotone" dataKey="forecast" stroke="#8B5CF6" strokeWidth={1.5} strokeDasharray="4 2" dot={false} />
+                <Line type="monotone" dataKey="rate" stroke="#5D9BC4" strokeWidth={2} dot={{ r: 3, fill: '#5D9BC4' }} />
+                <Line type="monotone" dataKey="forecast" stroke="#35B8A6" strokeWidth={1.5} strokeDasharray="4 2" dot={false} />
                 <Legend formatter={(v) => (v === 'rate' ? 'Actual Spot' : 'XGBoost Predicted')} wrapperStyle={{ fontSize: 10, fontFamily: 'JetBrains Mono' }} />
               </LineChart>
             </ResponsiveContainer>
@@ -344,32 +341,33 @@ export default function AdvancedAnalyticsPage() {
         </div>
 
         {/* Bunker Price Trend BarChart */}
-        <div className="glass rounded-xl p-5 border border-electric/15">
+        <div className="bg-[#102235] rounded-lg p-5 border border-[#294154]">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="font-display font-bold text-sm text-slate-100 m-0">
+              <h3 className="font-display font-bold text-sm text-[#E8F0F5] m-0">
                 Bunker Fuel Price Trend (VLSFO Singapore Benchmark)
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Primary variable operating cost component</p>
+              <p className="text-[11px] text-[#91A6B8] mt-0.5">Primary variable operating cost component</p>
             </div>
           </div>
           <div className="h-44 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={BUNKER_DATA} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" vertical={false} />
-                <XAxis dataKey="m" tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} domain={[500, 650]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#294154" vertical={false} />
+                <XAxis dataKey="m" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} domain={[500, 650]} />
                 <Tooltip
                   contentStyle={{
-                    background: 'rgba(11, 31, 54, 0.95)',
-                    border: '1px solid rgba(22, 131, 255, 0.25)',
+                    background: '#102235',
+                    border: '1px solid #294154',
                     borderRadius: 6,
                     fontSize: 11,
                     fontFamily: 'JetBrains Mono',
+                    color: '#E8F0F5',
                   }}
                   formatter={(v: any) => [`$${v}/MT`, 'Bunker']}
                 />
-                <Bar dataKey="price" fill="rgba(245, 158, 11, 0.7)" stroke="#F59E0B" strokeWidth={1} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="price" fill="#D6A24A" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -379,64 +377,66 @@ export default function AdvancedAnalyticsPage() {
       {/* Row 3: Port Congestion + Scatter Chart */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Port Congestion Levels BarChart */}
-        <div className="glass rounded-xl p-5 border border-electric/15">
+        <div className="bg-[#102235] rounded-lg p-5 border border-[#294154]">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="font-display font-bold text-sm text-slate-100 m-0">
+              <h3 className="font-display font-bold text-sm text-[#E8F0F5] m-0">
                 East Coast Port Congestion Index (%)
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Higher congestion correlates with higher demurrage and freight</p>
+              <p className="text-[11px] text-[#91A6B8] mt-0.5">Higher congestion correlates with higher demurrage and freight</p>
             </div>
           </div>
           <div className="h-40 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={CONG_DATA} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" vertical={false} />
-                <XAxis dataKey="port" tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} domain={[0, 40]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#294154" vertical={false} />
+                <XAxis dataKey="port" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} domain={[0, 40]} />
                 <Tooltip
                   contentStyle={{
-                    background: 'rgba(11, 31, 54, 0.95)',
-                    border: '1px solid rgba(22, 131, 255, 0.25)',
+                    background: '#102235',
+                    border: '1px solid #294154',
                     borderRadius: 6,
                     fontSize: 11,
                     fontFamily: 'JetBrains Mono',
+                    color: '#E8F0F5',
                   }}
                   formatter={(v: any) => [`${v}%`, 'Congestion']}
                 />
-                <Bar dataKey="cong" fill="#22D3EE" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="cong" fill="#35B8A6" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Bunker vs Freight Scatter Chart */}
-        <div className="glass rounded-xl p-5 border border-electric/15">
+        <div className="bg-[#102235] rounded-lg p-5 border border-[#294154]">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="font-display font-bold text-sm text-slate-100 m-0">
+              <h3 className="font-display font-bold text-sm text-[#E8F0F5] m-0">
                 Bunker Price vs Freight Correlation Scatter
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Empirical Pearson correlation coefficient r = 0.88</p>
+              <p className="text-[11px] text-[#91A6B8] mt-0.5">Empirical Pearson correlation coefficient r = 0.88</p>
             </div>
           </div>
           <div className="h-40 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" />
-                <XAxis dataKey="bunker" name="Bunker" tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickFormatter={(v) => `$${v}`} domain={[520, 640]} />
-                <YAxis dataKey="freight" name="Freight" tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickFormatter={(v) => `$${v}`} domain={[22, 34]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#294154" />
+                <XAxis dataKey="bunker" name="Bunker" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickFormatter={(v) => `$${v}`} domain={[520, 640]} />
+                <YAxis dataKey="freight" name="Freight" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickFormatter={(v) => `$${v}`} domain={[22, 34]} />
                 <Tooltip
                   contentStyle={{
-                    background: 'rgba(11, 31, 54, 0.95)',
-                    border: '1px solid rgba(22, 131, 255, 0.25)',
+                    background: '#102235',
+                    border: '1px solid #294154',
                     borderRadius: 6,
                     fontSize: 11,
                     fontFamily: 'JetBrains Mono',
+                    color: '#E8F0F5',
                   }}
                   cursor={{ strokeDasharray: '3 3' }}
                 />
-                <Scatter data={SCATTER_DATA} fill="#1683FF" />
+                <Scatter data={SCATTER_DATA} fill="#5D9BC4" />
               </ScatterChart>
             </ResponsiveContainer>
           </div>
@@ -461,11 +461,11 @@ export default function AdvancedAnalyticsPage() {
         </div>
 
         {/* Correlation Matrix Heatmap (5 cols) */}
-        <div className="lg:col-span-5 glass rounded-xl p-5 border border-electric/15">
-          <div className="text-[10px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
+        <div className="lg:col-span-5 bg-[#102235] rounded-lg p-5 border border-[#294154]">
+          <div className="text-[10px] text-[#35B8A6] font-mono tracking-wider uppercase mb-1 font-semibold">
             ◆ STATISTICAL DEPENDENCY
           </div>
-          <h3 className="font-display font-bold text-sm text-slate-100 m-0 mb-3">
+          <h3 className="font-display font-bold text-sm text-[#E8F0F5] m-0 mb-3">
             Empirical Feature Correlation Matrix
           </h3>
 
@@ -474,9 +474,9 @@ export default function AdvancedAnalyticsPage() {
               <table className="w-full text-center text-xs font-mono">
                 <thead>
                   <tr>
-                    <th className="p-1.5 text-left text-slate-500"></th>
+                    <th className="p-1.5 text-left text-[#91A6B8]"></th>
                     {corr.features.map((f) => (
-                      <th key={f} className="p-1.5 text-slate-400 font-normal truncate max-w-[50px]">
+                      <th key={f} className="p-1.5 text-[#91A6B8] font-normal truncate max-w-[50px]">
                         {f.slice(0, 4)}
                       </th>
                     ))}
@@ -485,7 +485,7 @@ export default function AdvancedAnalyticsPage() {
                 <tbody>
                   {corr.features.map((rowName, rIdx) => (
                     <tr key={rowName}>
-                      <td className="p-1.5 text-left font-bold text-slate-300">{rowName.slice(0, 6)}</td>
+                      <td className="p-1.5 text-left font-semibold text-[#E8F0F5]">{rowName.slice(0, 6)}</td>
                       {corr.matrix[rIdx]?.map((val, cIdx) => {
                         const isDiag = rIdx === cIdx;
                         const isPos = val > 0;
@@ -497,11 +497,11 @@ export default function AdvancedAnalyticsPage() {
                             className="p-1.5 rounded"
                             style={{
                               backgroundColor: isDiag
-                                ? 'rgba(22, 131, 255, 0.25)'
+                                ? 'rgba(93, 155, 196, 0.25)'
                                 : isPos
-                                ? `rgba(16, 185, 129, ${bgIntensity * 0.3})`
-                                : `rgba(239, 68, 68, ${bgIntensity * 0.3})`,
-                              color: isDiag ? '#22D3EE' : isPos ? '#10B981' : '#EF4444',
+                                ? `rgba(109, 175, 145, ${bgIntensity * 0.25})`
+                                : `rgba(201, 107, 107, ${bgIntensity * 0.25})`,
+                              color: isDiag ? '#5D9BC4' : isPos ? '#6DAF91' : '#C96B6B',
                               fontWeight: isDiag ? 700 : 500,
                             }}
                           >

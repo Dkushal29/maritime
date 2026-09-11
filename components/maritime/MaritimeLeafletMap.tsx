@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { RouteMetric } from '@/types';
-import { Anchor, Compass, Eye, Maximize2, Navigation, Ship, ZoomIn, ZoomOut } from 'lucide-react';
+import { RouteMetric, Vessel } from '@/types';
+import { Anchor, Compass, Eye, Maximize2, Navigation, Ship, ZoomIn, ZoomOut, RefreshCw, AlertCircle, Radio } from 'lucide-react';
+import { getVessels } from '@/lib/api';
 import 'leaflet/dist/leaflet.css';
 
 // Type definitions
@@ -45,7 +46,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Coking Coal (78,000 MT)',
     eta: '6.2 Days',
     imo: 'IMO 9845120',
-    color: '#00F0FF',
+    color: '#35B8A6',
   },
   {
     id: 'V-02',
@@ -61,7 +62,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Containerized (4,200 TEU)',
     eta: '1.8 Days',
     imo: 'IMO 9762314',
-    color: '#3B82F6',
+    color: '#5D9BC4',
   },
   {
     id: 'V-03',
@@ -77,7 +78,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Crude Oil (105,000 MT)',
     eta: '4.1 Days',
     imo: 'IMO 9631109',
-    color: '#EC4899',
+    color: '#D6A24A',
   },
   {
     id: 'V-04',
@@ -93,7 +94,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Iron Ore (82,000 MT)',
     eta: '9.5 Days',
     imo: 'IMO 9812401',
-    color: '#00F0FF',
+    color: '#35B8A6',
   },
   {
     id: 'V-05',
@@ -109,7 +110,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Steel & Industrial Spares',
     eta: '2.9 Days',
     imo: 'IMO 9890123',
-    color: '#3B82F6',
+    color: '#5D9BC4',
   },
   {
     id: 'V-06',
@@ -125,7 +126,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Thermal Coal (55,000 MT)',
     eta: '8 Hours',
     imo: 'IMO 9523412',
-    color: '#10B981',
+    color: '#6DAF91',
   },
   {
     id: 'V-07',
@@ -141,7 +142,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'VLSFO Bunker Fuel (42,000 MT)',
     eta: '3.4 Days',
     imo: 'IMO 9718892',
-    color: '#EC4899',
+    color: '#D6A24A',
   },
   {
     id: 'V-08',
@@ -157,7 +158,7 @@ const LIVE_VESSELS: VesselLiveItem[] = [
     cargo: 'Coking Coal (80,000 MT)',
     eta: '14.1 Days',
     imo: 'IMO 9794503',
-    color: '#00F0FF',
+    color: '#35B8A6',
   },
 ];
 
@@ -321,6 +322,69 @@ export default function MaritimeLeafletMap({
   const vesselMarkersRef = useRef<Record<string, any>>({});
   const [activeVesselId, setActiveVesselId] = useState<string | null>(null);
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+  const [fleetVessels, setFleetVessels] = useState<VesselLiveItem[]>(LIVE_VESSELS);
+  const [unavailableVessels, setUnavailableVessels] = useState<{ id: string; name: string; type: string; imo: string }[]>([]);
+  const [activeTab, setActiveTab] = useState<'tracked' | 'unavailable'>('tracked');
+  const [isFleetLoading, setIsFleetLoading] = useState(false);
+  const [fleetDataStatus, setFleetDataStatus] = useState<string>('LIVE AIS');
+  const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toLocaleTimeString());
+  const [selectedUnavailable, setSelectedUnavailable] = useState<string | null>(null);
+
+  const loadFleet = async () => {
+    setIsFleetLoading(true);
+    try {
+      const vessels = await getVessels();
+      if (vessels && vessels.length > 0) {
+        const valid: VesselLiveItem[] = [];
+        const unavail: { id: string; name: string; type: string; imo: string }[] = [];
+
+        vessels.forEach((v) => {
+          if (v.lat !== null && v.lng !== null && v.positionAvailable !== false) {
+            const isBulk = v.type.toLowerCase().includes('panamax') || v.type.toLowerCase().includes('capesize') || v.type.toLowerCase().includes('supramax');
+            const color = v.status === 'Recommended' ? '#35B8A6' : v.status === 'Standard' ? '#5D9BC4' : '#6DAF91';
+            valid.push({
+              id: v.id,
+              name: v.name,
+              type: v.type as any,
+              category: isBulk ? 'bulk' : 'cargo',
+              lat: v.lat,
+              lng: v.lng,
+              speedKts: v.speedKnots ?? (v.availability === 'In Transit' ? 12.5 : 0.0),
+              headingDeg: v.headingDegrees ?? 135,
+              route: v.previousRoute,
+              status: v.availability === 'In Transit' ? 'Underway Laden' : v.availability,
+              cargo: `${v.type} Bulk`,
+              eta: v.eta,
+              imo: v.imoNumber,
+              color: color,
+            });
+          } else {
+            unavail.push({
+              id: v.id,
+              name: v.name,
+              type: v.type,
+              imo: v.imoNumber,
+            });
+          }
+        });
+
+        if (valid.length > 0) {
+          setFleetVessels(valid);
+        }
+        setUnavailableVessels(unavail);
+        setFleetDataStatus(vessels[0].dataStatus || 'LIVE AIS');
+        setLastSyncTime(new Date().toLocaleTimeString());
+      }
+    } catch (e) {
+      console.warn('Live fleet fetch warning:', e);
+    } finally {
+      setIsFleetLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFleet();
+  }, []);
 
   // Normalize selected route key
   const activeRouteKey = useMemo(() => {
@@ -492,23 +556,23 @@ export default function MaritimeLeafletMap({
       secondaryLine.addTo(polylinesLayer);
     });
 
-    // 2. Render Primary Selected Route with Glowing Dual-Layer
-    // Bottom Layer: Wide Glow
+    // 2. Render Primary Selected Route with Controlled Dual-Layer
+    // Bottom Layer: Subtle Accent Halo
     const glowLine = L.polyline(primaryCorridor.coords, {
-      color: '#00F0FF',
-      weight: 9,
-      opacity: 0.3,
+      color: '#35B8A6',
+      weight: 5,
+      opacity: 0.25,
       lineCap: 'round',
       lineJoin: 'round',
     });
     glowLine.addTo(polylinesLayer);
 
-    // Top Layer: High-Contrast Animated Dashed Core
+    // Top Layer: Clean Dashed Line
     const coreLine = L.polyline(primaryCorridor.coords, {
-      color: '#22D3EE',
-      weight: 3.5,
-      opacity: 0.95,
-      dashArray: '10, 8',
+      color: '#35B8A6',
+      weight: 2.5,
+      opacity: 0.9,
+      dashArray: '8, 6',
       className: 'leaflet-animated-route',
     });
 
@@ -605,8 +669,8 @@ export default function MaritimeLeafletMap({
       const isOrigin = Math.abs(port.lat - origCoord[0]) < 1.0 && Math.abs(port.lng - origCoord[1]) < 1.0;
       const isDest = Math.abs(port.lat - destCoord[0]) < 1.0 && Math.abs(port.lng - destCoord[1]) < 1.0;
 
-      const portBorderColor = isDest ? '#10B981' : isOrigin ? '#00F0FF' : '#3B82F6';
-      const portBgColor = isDest ? 'rgba(16, 185, 129, 0.25)' : isOrigin ? 'rgba(0, 240, 255, 0.25)' : 'rgba(11, 31, 54, 0.8)';
+      const portBorderColor = isDest ? '#6DAF91' : isOrigin ? '#35B8A6' : '#5D9BC4';
+      const portBgColor = isDest ? 'rgba(109, 175, 145, 0.25)' : isOrigin ? 'rgba(53, 184, 166, 0.25)' : 'rgba(16, 34, 53, 0.85)';
       const pulseRing = isDest || isOrigin ? `<div class="port-pulse-ring" style="border-color: ${portBorderColor};"></div>` : '';
 
       const portIcon = L.divIcon({
@@ -668,7 +732,7 @@ export default function MaritimeLeafletMap({
     });
 
     // 6. Render Live Vessels with CSS DivIcons & Directional Indicators
-    LIVE_VESSELS.forEach((v) => {
+    fleetVessels.forEach((v) => {
       const isBulker = v.category === 'bulk';
       const isContainer = v.category === 'container';
       const isTanker = v.category === 'tanker';
@@ -868,7 +932,7 @@ export default function MaritimeLeafletMap({
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          border: 1.5px solid #00F0FF;
+          border: 1px solid #35B8A6;
           animation: portRingPulse 2.4s ease-out infinite;
           pointer-events: none;
         }
@@ -876,19 +940,19 @@ export default function MaritimeLeafletMap({
         @keyframes vesselPingPulse {
           0% {
             transform: scale(0.8);
-            opacity: 0.9;
+            opacity: 0.8;
           }
           100% {
-            transform: scale(2.2);
+            transform: scale(2.0);
             opacity: 0;
           }
         }
         .vessel-ping {
           position: absolute;
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          border: 1.5px solid #00F0FF;
+          border: 1px solid #35B8A6;
           animation: vesselPingPulse 2.8s ease-out infinite;
           pointer-events: none;
         }
@@ -927,54 +991,120 @@ export default function MaritimeLeafletMap({
         </button>
       </div>
 
+      {/* Top Center: Live Data Source Provenance Pill */}
+      <div className="absolute top-4 left-16 sm:left-20 z-[400] flex items-center gap-2 bg-[#0B1A2F]/90 border border-electric/30 rounded-xl px-3 py-1.5 shadow-lg backdrop-blur-md font-mono text-[11px]">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span className="text-emerald-400 font-bold tracking-wider">{fleetDataStatus}</span>
+        <span className="text-slate-500 hidden md:inline">•</span>
+        <span className="text-slate-400 hidden md:inline">{lastSyncTime ? `Sync: ${lastSyncTime}` : 'Live Ingestion'}</span>
+        <button
+          onClick={loadFleet}
+          disabled={isFleetLoading}
+          title="Refresh AIS Fleet Positions"
+          className="ml-1 text-cyan hover:text-white p-1 rounded transition-all cursor-pointer"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isFleetLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
       {/* Floating Panel: Live Vessels Near Route (Top Right) */}
-      <div className="hidden sm:block absolute top-4 right-4 z-[400] w-72 max-h-[380px] bg-[#0B192C]/92 border border-electric/30 rounded-xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden font-mono">
-        {/* Panel Header */}
-        <div className="px-3.5 py-2.5 bg-[#081220] border-b border-electric/20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs font-bold text-slate-100 tracking-wide">Live Vessels Near Route</span>
+      <div className="hidden sm:block absolute top-4 right-4 z-[400] w-72 max-h-[390px] bg-[#0B192C]/92 border border-electric/30 rounded-xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden font-mono">
+        {/* Panel Header & Tabs */}
+        <div className="px-3 py-2 bg-[#081220] border-b border-electric/20 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100">
+            <button
+              onClick={() => setActiveTab('tracked')}
+              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                activeTab === 'tracked'
+                  ? 'bg-cyan/20 text-cyan border border-cyan/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Tracked ({fleetVessels.length})
+            </button>
+            {unavailableVessels.length > 0 && (
+              <button
+                onClick={() => setActiveTab('unavailable')}
+                className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                  activeTab === 'unavailable'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                No Fix ({unavailableVessels.length})
+              </button>
+            )}
           </div>
-          <span className="text-[10px] text-cyan bg-cyan/10 border border-cyan/25 px-1.5 py-0.2 rounded font-bold">
-            {LIVE_VESSELS.length} Active
+          <span className="text-[10px] text-emerald-400 font-bold">
+            Live
           </span>
         </div>
 
+        {/* Unavailable Notice when tab selected */}
+        {activeTab === 'unavailable' && (
+          <div className="p-2.5 bg-amber-500/10 border-b border-amber-500/20 text-[10px] text-amber-300 leading-snug">
+            <AlertCircle className="w-3 h-3 inline mr-1 text-amber-400" />
+            Vessels below have no active GPS/AIS fix. Position coordinates are not fabricated.
+          </div>
+        )}
+
         {/* Vessel List */}
         <div className="overflow-y-auto divide-y divide-electric/10 max-h-[320px] text-xs">
-          {LIVE_VESSELS.map((v) => {
-            const isActive = activeVesselId === v.id;
-            return (
-              <button
-                key={v.id}
-                onClick={() => handleSelectVessel(v)}
-                className={`w-full px-3 py-2 text-left transition-all hover:bg-ocean-800/60 flex items-center justify-between gap-2 cursor-pointer ${
-                  isActive ? 'bg-cyan/10 border-l-2 border-cyan' : ''
-                }`}
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
-                    style={{ backgroundColor: v.color, boxShadow: `0 0 6px ${v.color}` }}
-                  />
-                  <div className="truncate">
-                    <div className="font-bold text-slate-200 text-[11px] truncate">{v.name}</div>
-                    <div className="text-[9px] text-slate-400 truncate">{v.type}</div>
+          {activeTab === 'tracked' &&
+            fleetVessels.map((v) => {
+              const isActive = activeVesselId === v.id;
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => handleSelectVessel(v)}
+                  className={`w-full px-3 py-2 text-left transition-all hover:bg-ocean-800/60 flex items-center justify-between gap-2 cursor-pointer ${
+                    isActive ? 'bg-cyan/10 border-l-2 border-cyan' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                      style={{ backgroundColor: v.color, boxShadow: `0 0 6px ${v.color}` }}
+                    />
+                    <div className="truncate">
+                      <div className="font-bold text-slate-200 text-[11px] truncate">{v.name}</div>
+                      <div className="text-[9px] text-slate-400 truncate">{v.type}</div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="text-right shrink-0">
-                  <div className="text-[11px] font-bold text-cyan">{v.speedKts} kts</div>
-                  <div className="text-[9px] text-slate-500">{v.status.split(' ')[0]}</div>
+                  <div className="text-right shrink-0">
+                    <div className="text-[11px] font-bold text-cyan">{v.speedKts} kts</div>
+                    <div className="text-[9px] text-slate-500">{v.status.split(' ')[0]}</div>
+                  </div>
+                </button>
+              );
+            })}
+
+          {activeTab === 'unavailable' &&
+            unavailableVessels.map((uv) => (
+              <div
+                key={uv.id}
+                onClick={() => setSelectedUnavailable(uv.id)}
+                className="w-full px-3 py-2.5 text-left bg-ocean-950/40 hover:bg-ocean-900/60 flex flex-col gap-1 cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-300 text-[11px]">{uv.name}</span>
+                  <span className="text-[9px] text-amber-400/90 font-mono px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/20">
+                    Position Unavailable
+                  </span>
                 </div>
-              </button>
-            );
-          })}
+                <div className="text-[10px] text-slate-400 flex justify-between">
+                  <span>{uv.type} • {uv.imo || 'No IMO'}</span>
+                  <span className="text-slate-500">Transponder Pending</span>
+                </div>
+              </div>
+            ))}
         </div>
       </div>
+
 
       {/* Mobile Vessel Panel Toggle */}
       <div className="sm:hidden absolute top-4 right-4 z-[400]">
@@ -1020,37 +1150,37 @@ export default function MaritimeLeafletMap({
       )}
 
       {/* Bottom Compact Map Legend */}
-      <div className="absolute bottom-3 left-3 right-3 z-[400] flex flex-wrap items-center justify-between gap-3 p-2.5 px-4 rounded-xl bg-[#081220]/90 border border-electric/20 backdrop-blur-md text-[11px] font-mono">
+      <div className="absolute bottom-3 left-3 right-3 z-[400] flex flex-wrap items-center justify-between gap-3 p-2.5 px-4 rounded-md bg-[#102235]/95 border border-[#294154] text-[11px] font-mono">
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           {/* Selected Route */}
           <div className="flex items-center gap-2">
-            <div className="w-6 h-1 rounded bg-cyan shadow-[0_0_8px_#00F0FF]"></div>
-            <span className="text-slate-200 font-bold">Selected Route</span>
+            <div className="w-5 h-0.5 rounded-xs bg-[#35B8A6]"></div>
+            <span className="text-[#E8F0F5] font-semibold">Selected Route</span>
           </div>
 
           {/* Other Corridors */}
           <div className="flex items-center gap-2">
-            <div className="w-6 h-0.5 border-t border-dashed border-blue-400"></div>
-            <span className="text-slate-400">Other Corridors</span>
+            <div className="w-5 h-0.5 border-t border-dashed border-[#5D9BC4]/60"></div>
+            <span className="text-[#91A6B8]">Other Corridors</span>
           </div>
 
           {/* Vessel Symbols */}
-          <div className="hidden md:flex items-center gap-4 border-l border-electric/20 pl-4">
+          <div className="hidden md:flex items-center gap-4 border-l border-[#294154] pl-4">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_6px_#00F0FF]"></span>
-              <span className="text-slate-300">Bulk Carrier</span>
+              <span className="w-2 h-2 rounded-full bg-[#35B8A6]"></span>
+              <span className="text-[#91A6B8]">Bulk Carrier</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] shadow-[0_0_6px_#3B82F6]"></span>
-              <span className="text-slate-300">Container Ship</span>
+              <span className="w-2 h-2 rounded-full bg-[#5D9BC4]"></span>
+              <span className="text-[#91A6B8]">Container Ship</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#EC4899] shadow-[0_0_6px_#EC4899]"></span>
-              <span className="text-slate-300">Tanker</span>
+              <span className="w-2 h-2 rounded-full bg-[#D6A24A]"></span>
+              <span className="text-[#91A6B8]">Tanker</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]"></span>
-              <span className="text-slate-300">Cargo Vessel</span>
+              <span className="w-2 h-2 rounded-full bg-[#6DAF91]"></span>
+              <span className="text-[#91A6B8]">Cargo Vessel</span>
             </div>
           </div>
         </div>

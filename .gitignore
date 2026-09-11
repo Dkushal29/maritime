@@ -32,6 +32,8 @@ __pycache__/
 **/__pycache__/
 *.pyc
 *.pkl
+*.db
+backend/*.db
 .pytest_cache/
 
 # misc

@@ -83,22 +83,22 @@ export default function AlertsPage() {
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1.5 p-1 bg-ocean-950/80 rounded-xl border border-electric/15">
+        <div className="flex flex-wrap gap-1.5 p-1 bg-[#102235] rounded-md border border-[#294154]">
           {CATEGORIES.map((cat) => {
             const count = getCategoryCount(cat);
             return (
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded text-xs font-mono font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
                   filter === cat
-                    ? 'bg-electric text-white shadow-md shadow-electric/25'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-ocean-800/60'
+                    ? 'bg-[#162C40] text-[#35B8A6] border border-[#35B8A6]/40'
+                    : 'text-[#91A6B8] hover:text-[#E8F0F5] hover:bg-[#162C40]'
                 }`}
               >
                 <span>{cat}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  filter === cat ? 'bg-white/20 text-white' : 'bg-ocean-800 text-slate-400'
+                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                  filter === cat ? 'bg-[#35B8A6]/20 text-[#35B8A6]' : 'bg-[#0B1726] text-[#91A6B8]'
                 }`}>
                   {count}
                 </span>
@@ -107,8 +107,8 @@ export default function AlertsPage() {
           })}
         </div>
 
-        <div className="text-xs font-mono text-slate-400">
-          Showing <strong className="text-cyan font-bold">{filtered.length}</strong> active notifications
+        <div className="text-xs font-mono text-[#91A6B8]">
+          Showing <strong className="text-[#35B8A6] font-semibold">{filtered.length}</strong> active notifications
         </div>
       </div>
 
@@ -116,11 +116,11 @@ export default function AlertsPage() {
       {isLoading ? (
         <div className="space-y-3 animate-pulse">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-ocean-900 rounded-xl border border-electric/15" />
+            <div key={i} className="h-28 bg-[#102235] rounded-lg border border-[#294154]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center border-electric/15 text-slate-400 font-mono text-xs">
+        <div className="bg-[#102235] rounded-lg p-12 text-center border border-[#294154] text-[#91A6B8] font-mono text-xs">
           No active alerts match this filter. All operational systems normal.
         </div>
       ) : (

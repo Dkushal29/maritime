@@ -19,7 +19,7 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
   unit = '',
   trend,
   isPositive = true,
-  color = '#22D3EE',
+  color = '#35B8A6',
   sparkline = [30, 31, 29, 32, 33, 31, 35],
   icon,
   onClick,
@@ -29,24 +29,23 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`glass rounded-xl p-4 transition-all duration-200 ${
-        onClick ? 'hover:border-cyan/40 cursor-pointer hover:bg-ocean-800/40' : ''
+      className={`bg-[#102235] border border-[#294154] rounded-lg p-3.5 transition-colors ${
+        onClick ? 'hover:border-[#35B8A6]/60 cursor-pointer hover:bg-[#162C40]' : ''
       }`}
-      style={{ borderColor: `${color}25` }}
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          {icon && <span className="text-sm opacity-80">{icon}</span>}
-          <span className="text-[11px] font-mono text-slate-400 tracking-wider uppercase">
+          {icon && <span className="text-sm opacity-80 text-[#91A6B8]">{icon}</span>}
+          <span className="text-[11px] font-mono text-[#91A6B8] tracking-wider uppercase">
             {label}
           </span>
         </div>
         {trend && (
           <span
-            className="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold"
+            className="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold border border-[#294154]"
             style={{
-              color: isPositive ? '#10B981' : '#F59E0B',
-              backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+              color: isPositive ? '#6DAF91' : '#D6A24A',
+              backgroundColor: isPositive ? 'rgba(109, 175, 145, 0.12)' : 'rgba(214, 162, 74, 0.12)',
             }}
           >
             {trend}
@@ -55,11 +54,10 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
       </div>
 
       <div
-        className="font-mono text-2xl font-bold tracking-tight mb-2"
-        style={{ color }}
+        className="font-mono text-2xl font-bold tracking-tight mb-2 text-[#E8F0F5]"
       >
         {value}
-        {unit && <span className="text-xs text-slate-400 ml-1 font-normal">{unit}</span>}
+        {unit && <span className="text-xs text-[#91A6B8] ml-1 font-normal">{unit}</span>}
       </div>
 
       <div className="h-9 w-full">
@@ -69,7 +67,7 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
               type="monotone"
               dataKey="v"
               stroke={color}
-              fill={`${color}18`}
+              fill={`${color}15`}
               strokeWidth={1.5}
               dot={false}
             />

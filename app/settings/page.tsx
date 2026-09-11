@@ -21,15 +21,15 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <GlobalFilterBar />
 
-      <div className="p-6 bg-[#131C31] border border-[#1E293B] rounded-xl shadow-md space-y-6">
-        <div className="flex items-center justify-between border-b border-[#1E293B] pb-4">
+      <div className="p-6 bg-[#102235] border border-[#294154] rounded-lg space-y-6">
+        <div className="flex items-center justify-between border-b border-[#294154] pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400">
+            <div className="p-2 rounded-md bg-[#162C40] border border-[#294154] text-[#35B8A6]">
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">Enterprise System Preferences</h2>
-              <p className="text-xs text-slate-400 font-mono">
+              <h2 className="text-base font-bold text-[#E8F0F5]">Enterprise System Preferences</h2>
+              <p className="text-xs text-[#91A6B8] font-mono">
                 Configure global trading defaults, units, currencies, and model hyper-parameters.
               </p>
             </div>
@@ -37,7 +37,7 @@ export default function SettingsPage() {
 
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors shadow-md"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#35B8A6] hover:bg-[#35B8A6]/90 text-[#0B1726] font-bold text-xs transition-colors"
           >
             <Save className="w-4 h-4" />
             <span>Save Preferences</span>
@@ -46,18 +46,18 @@ export default function SettingsPage() {
 
         {/* Section 1: Default Scenario Configuration */}
         <div className="space-y-3">
-          <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-xs font-mono font-semibold text-[#35B8A6] uppercase tracking-wider flex items-center gap-2">
             <Sliders className="w-4 h-4" />
             Default Scenarios &amp; Filter Locks
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans">
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">Default Import Origin</label>
+              <label className="text-[#91A6B8] font-semibold block mb-1">Default Import Origin</label>
               <select
                 value={origin}
                 onChange={(e) => setOrigin(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-lg bg-[#0B1120] border border-[#1E293B] text-slate-100 font-mono outline-none"
+                className="w-full px-3 py-2 rounded-md bg-[#0B1726] border border-[#294154] text-[#E8F0F5] font-mono outline-none"
               >
                 <option value="Australia">Australia</option>
                 <option value="Indonesia">Indonesia</option>
@@ -66,11 +66,11 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">Default Discharge Port</label>
+              <label className="text-[#91A6B8] font-semibold block mb-1">Default Discharge Port</label>
               <select
                 value={destination}
                 onChange={(e) => setDestination(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-lg bg-[#0B1120] border border-[#1E293B] text-slate-100 font-mono outline-none"
+                className="w-full px-3 py-2 rounded-md bg-[#0B1726] border border-[#294154] text-[#E8F0F5] font-mono outline-none"
               >
                 <option value="Visakhapatnam">Visakhapatnam</option>
                 <option value="Paradip">Paradip</option>
@@ -81,25 +81,25 @@ export default function SettingsPage() {
         </div>
 
         {/* Section 2: Units & Display Preferences */}
-        <div className="space-y-3 pt-4 border-t border-[#1E293B]">
-          <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3 pt-4 border-t border-[#294154]">
+          <h3 className="text-xs font-mono font-semibold text-[#35B8A6] uppercase tracking-wider flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
             Currency &amp; Measurement Units
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">Display Currency</label>
+              <label className="text-[#91A6B8] font-semibold block mb-1">Display Currency</label>
               <div className="flex gap-2">
                 {(['USD', 'INR'] as const).map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => setCurrency(c)}
-                    className={`flex-1 py-2 rounded-lg font-mono font-bold border transition-colors ${
+                    className={`flex-1 py-2 rounded-md font-mono font-semibold text-xs border transition-colors ${
                       currency === c
-                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                        : 'bg-[#0B1120] text-slate-400 border-[#1E293B]'
+                        ? 'bg-[#162C40] text-[#35B8A6] border-[#35B8A6]/40'
+                        : 'bg-[#0B1726] text-[#91A6B8] border-[#294154]'
                     }`}
                   >
                     {c} ({c === 'USD' ? '$' : '₹'})
@@ -109,17 +109,17 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">Cargo Weight Unit</label>
+              <label className="text-[#91A6B8] font-semibold block mb-1">Cargo Weight Unit</label>
               <div className="flex gap-2">
                 {(['Metric Tonnes', 'Long Tons'] as const).map((u) => (
                   <button
                     key={u}
                     type="button"
                     onClick={() => setUnit(u)}
-                    className={`flex-1 py-2 rounded-lg font-mono font-bold border transition-colors ${
+                    className={`flex-1 py-2 rounded-md font-mono font-semibold text-xs border transition-colors ${
                       unit === u
-                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                        : 'bg-[#0B1120] text-slate-400 border-[#1E293B]'
+                        ? 'bg-[#162C40] text-[#35B8A6] border-[#35B8A6]/40'
+                        : 'bg-[#0B1726] text-[#91A6B8] border-[#294154]'
                     }`}
                   >
                     {u}
@@ -131,8 +131,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Section 3: Model Risk Hyperparameters */}
-        <div className="space-y-3 pt-4 border-t border-[#1E293B]">
-          <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3 pt-4 border-t border-[#294154]">
+          <h3 className="text-xs font-mono font-semibold text-[#35B8A6] uppercase tracking-wider flex items-center gap-2">
             <Cpu className="w-4 h-4" />
             AI Model Risk Profile
           </h3>
@@ -143,14 +143,14 @@ export default function SettingsPage() {
                 key={t}
                 type="button"
                 onClick={() => setRiskTolerance(t)}
-                className={`p-3 rounded-lg border text-left font-mono transition-all ${
+                className={`p-3 rounded-md border text-left font-mono transition-colors ${
                   riskTolerance === t
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-                    : 'bg-[#0B1120] text-slate-400 border-[#1E293B]'
+                    ? 'bg-[#162C40] text-[#35B8A6] border-[#35B8A6]/40'
+                    : 'bg-[#0B1726] text-[#91A6B8] border-[#294154]'
                 }`}
               >
                 <span className="text-xs font-bold block">{t}</span>
-                <span className="text-[10px] text-slate-400 block mt-1">
+                <span className="text-[10px] text-[#91A6B8] block mt-1">
                   {t === 'Conservative'
                     ? 'Minimizes rate volatility exposure'
                     : t === 'Balanced'

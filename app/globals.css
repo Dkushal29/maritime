@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-  --background: 6 21 37;
-  --foreground: 248 250 252;
+  --background: 11 23 38; /* #0B1726 */
+  --foreground: 232 240 245; /* #E8F0F5 */
 }
 
 html, body {
@@ -14,27 +14,27 @@ html, body {
 }
 
 body {
-  color: rgb(var(--foreground));
-  background-color: #061525;
+  color: #E8F0F5;
+  background-color: #0B1726;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbars */
+/* Custom restrained scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(22, 131, 255, 0.2);
-  border-radius: 2px;
+  background: #294154;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(22, 131, 255, 0.4);
+  background: #3B576E;
 }
 
 /* Hide scrollbar by default, show on hover */
@@ -51,28 +51,64 @@ body {
   display: block;
 }
 
-/* Glass panel effects */
+/* Operational panel styling */
 .glass {
-  background: rgba(11, 31, 54, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(22, 131, 255, 0.12);
+  background: #102235;
+  border: 1px solid #294154;
 }
 
 .glass-bright {
-  background: rgba(18, 59, 103, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(34, 211, 238, 0.15);
+  background: #162C40;
+  border: 1px solid #294154;
 }
 
-/* Glow effects */
-.glow-electric { box-shadow: 0 0 20px rgba(22, 131, 255, 0.3); }
-.glow-cyan { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
-.glow-success { box-shadow: 0 0 16px rgba(16, 185, 129, 0.3); }
-.text-glow { text-shadow: 0 0 28px rgba(34, 211, 238, 0.5); }
+/* Clean subtle borders replacing glowing shadows */
+.glow-electric { box-shadow: none; border-color: #294154; }
+.glow-cyan { box-shadow: none; border-color: #35B8A6; }
+.glow-success { box-shadow: none; border-color: #6DAF91; }
+.text-glow { text-shadow: none; }
 
-/* Smooth Webflow Transitions */
+/* Operational Buttons */
+.btn-primary {
+  background-color: #35B8A6;
+  color: #0B1726;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+.btn-primary:hover {
+  background-color: #2EA595;
+}
+
+.btn-secondary {
+  background-color: #102235;
+  color: #E8F0F5;
+  border: 1px solid #294154;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn-secondary:hover {
+  background-color: #162C40;
+  border-color: #3B576E;
+}
+
+/* Form Input Control Standards */
+.form-input {
+  background-color: #102235;
+  border: 1px solid #294154;
+  color: #E8F0F5;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #35B8A6;
+}
+
+/* Smooth Transitions */
 html {
   scroll-behavior: smooth;
 }
@@ -80,7 +116,7 @@ html {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -89,7 +125,7 @@ html {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Route line animation */
@@ -97,29 +133,23 @@ html {
   to { stroke-dashoffset: -20; }
 }
 .route-animated {
-  animation: dash 1.5s linear infinite;
+  animation: dash 2s linear infinite;
 }
 
-/* Pulse for port nodes */
+/* Subtle port markers */
 @keyframes port-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.3); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 .port-pulse {
-  animation: port-pulse 2s ease-in-out infinite;
+  animation: port-pulse 3s ease-in-out infinite;
   transform-origin: center;
 }
 
-/* AI processing animation */
-@keyframes ai-scan {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+/* Clean operational accent line */
 .ai-gradient {
-  background: linear-gradient(135deg, #1683FF, #22D3EE, #8B5CF6, #1683FF);
-  background-size: 300% 300%;
-  animation: ai-scan 3s ease infinite;
+  background: #35B8A6;
+  color: #0B1726;
 }
 
 /* Blinking cursor */
@@ -129,35 +159,33 @@ html {
 }
 .blink { animation: blink 1s step-end infinite; }
 
-/* Shimmer for loading */
+/* Subtle shimmer */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(22,131,255,0.1) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(53, 184, 166, 0.08) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
 
-/* Sidebar vessel texture */
+/* Sidebar texture */
 .sidebar-texture {
-  background-image:
-    radial-gradient(ellipse at 20% 80%, rgba(22, 131, 255, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+  background-color: #08121E;
 }
 
-/* Recharts overrides for dark command center */
+/* Recharts overrides for clean operational look */
 .recharts-tooltip-wrapper { outline: none !important; }
 .recharts-default-tooltip {
-  background: rgba(11, 31, 54, 0.95) !important;
-  border: 1px solid rgba(22, 131, 255, 0.25) !important;
-  border-radius: 8px !important;
-  color: #F8FAFC !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  background: #102235 !important;
+  border: 1px solid #294154 !important;
+  border-radius: 6px !important;
+  color: #E8F0F5 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 .recharts-cartesian-grid-line {
-  stroke: rgba(22, 131, 255, 0.08) !important;
+  stroke: #1E3345 !important;
 }
 
 /* Number display */

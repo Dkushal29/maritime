@@ -20,13 +20,13 @@ export const FreightDriverCard: React.FC<FreightDriverCardProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`glass rounded-xl p-5 ${className}`}>
+    <div className={`bg-[#102235] rounded-lg p-5 border border-[#294154] ${className}`}>
       <div className="mb-4">
-        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1">
+        <div className="text-[11px] text-[#35B8A6] font-mono tracking-wider uppercase mb-1 font-semibold">
           ◆ MODEL EXPLAINABILITY
         </div>
-        <h3 className="font-display font-bold text-lg text-slate-100 m-0">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+        <h3 className="font-display font-bold text-base text-[#E8F0F5] m-0">{title}</h3>
+        {subtitle && <p className="text-xs text-[#91A6B8] mt-0.5">{subtitle}</p>}
       </div>
 
       <div className="flex flex-col gap-3">
@@ -36,24 +36,24 @@ export const FreightDriverCard: React.FC<FreightDriverCardProps> = ({
 
           return (
             <div key={d.label} className="flex items-center gap-4 text-xs">
-              <span className="w-36 text-slate-300 truncate font-medium">{d.label}</span>
+              <span className="w-36 text-[#E8F0F5] truncate font-medium">{d.label}</span>
               <div className="flex-1 relative flex items-center h-6">
                 {/* Left side (negative impact) */}
                 <div className="w-1/2 flex justify-end">
                   {!isUp && (
                     <div
-                      className="h-4 rounded-l bg-gradient-to-l from-rose-500/80 to-rose-500/30 transition-all duration-500"
+                      className="h-3.5 rounded-l bg-[#C96B6B] transition-all duration-300"
                       style={{ width: `${Math.min(100, absVal * 2.2)}%` }}
                     />
                   )}
                 </div>
                 {/* Center line */}
-                <div className="w-[2px] h-6 bg-electric/40 shrink-0" />
+                <div className="w-[2px] h-5 bg-[#294154] shrink-0" />
                 {/* Right side (positive impact) */}
                 <div className="w-1/2">
                   {isUp && (
                     <div
-                      className="h-4 rounded-r bg-gradient-to-r from-electric/80 to-cyan/60 transition-all duration-500"
+                      className="h-3.5 rounded-r bg-[#35B8A6] transition-all duration-300"
                       style={{ width: `${Math.min(100, absVal * 2.2)}%` }}
                     />
                   )}
@@ -61,7 +61,7 @@ export const FreightDriverCard: React.FC<FreightDriverCardProps> = ({
               </div>
               <span
                 className="w-14 text-right font-mono font-bold text-xs"
-                style={{ color: isUp ? '#22D3EE' : '#EF4444' }}
+                style={{ color: isUp ? '#35B8A6' : '#C96B6B' }}
               >
                 {isUp ? '+' : '-'}{absVal}%
               </span>

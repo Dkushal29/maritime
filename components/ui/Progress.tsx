@@ -10,8 +10,8 @@ export interface ProgressProps {
 
 export const Progress: React.FC<ProgressProps> = ({
   value,
-  color = '#1683FF',
-  gradient = true,
+  color = '#35B8A6',
+  gradient = false,
   height = 6,
   className = '',
 }) => {
@@ -19,14 +19,14 @@ export const Progress: React.FC<ProgressProps> = ({
 
   return (
     <div
-      className={`w-full rounded-full overflow-hidden bg-ocean-950/80 border border-electric/15 ${className}`}
+      className={`w-full rounded-sm overflow-hidden bg-[#0B1726] border border-[#294154] ${className}`}
       style={{ height }}
     >
       <div
-        className={`h-full rounded-full transition-all duration-300 ${gradient ? 'ai-gradient' : ''}`}
+        className="h-full transition-all duration-300"
         style={{
           width: `${clamped}%`,
-          backgroundColor: gradient ? undefined : color,
+          backgroundColor: color,
         }}
       />
     </div>

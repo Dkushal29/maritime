@@ -14,12 +14,12 @@ export const VesselStatus: React.FC<VesselStatusProps> = ({
   const normalized = (status || 'Available').toLowerCase();
 
   const config = normalized.includes('avail')
-    ? { text: 'Available', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)' }
+    ? { text: 'Available', color: '#6DAF91', bg: 'rgba(109, 175, 145, 0.12)', border: 'rgba(109, 175, 145, 0.3)' }
     : normalized.includes('sea') || normalized.includes('transit')
-    ? { text: 'At Sea', color: '#22D3EE', bg: 'rgba(34, 211, 238, 0.12)', border: 'rgba(34, 211, 238, 0.3)' }
+    ? { text: 'At Sea', color: '#5D9BC4', bg: 'rgba(93, 155, 196, 0.12)', border: 'rgba(93, 155, 196, 0.3)' }
     : normalized.includes('book')
-    ? { text: 'Booked', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)' }
-    : { text: 'Maintenance', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.3)' };
+    ? { text: 'Booked', color: '#D6A24A', bg: 'rgba(214, 162, 74, 0.12)', border: 'rgba(214, 162, 74, 0.3)' }
+    : { text: 'Maintenance', color: '#C96B6B', bg: 'rgba(201, 107, 107, 0.12)', border: 'rgba(201, 107, 107, 0.3)' };
 
   const sizeClass = size === 'sm' ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2.5 py-1';
 

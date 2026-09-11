@@ -21,3 +21,6 @@ V019,MV Jakarta Trader,IMO 9712458,Panamax,78000,2018,Malacca Strait,2.8,101.4,2
 V020,MV Ganga Fortune,IMO 9632587,Supramax,58500,2016,Bay of Bengal,18.1,87.4,2026-09-17,690000,22800,20.4,Available,Indonesia → Visakhapatnam,"Visakhapatnam,Paradip,Chennai,Haldia,Kamarajar"
 V021,MV Indian Victor,IMO 9798541,Panamax,81000,2019,Sri Lanka Coast,6.1,80.8,2026-09-19,885000,28400,24.2,Available,Australia → Visakhapatnam,"Visakhapatnam,Paradip,Chennai,Kamarajar"
 V022,MV Oceanic Beacon,IMO 9856321,Capesize,183000,2022,Timor Sea,-11.2,126.5,2026-10-06,1990000,49200,42.8,Available,Australia → Visakhapatnam,"Visakhapatnam,Paradip"
+V023,MV Bay Navigator,IMO 9754129,Handysize,35000,2017,Bay of Bengal,16.2,84.5,2026-09-18,420000,14500,15.2,Available,Australia → Visakhapatnam,"Visakhapatnam,Paradip,Chennai,Haldia,Kamarajar"
+V024,MV Hooghly Express,IMO 9811234,Handysize,32000,2019,Malacca Strait,3.8,99.5,2026-09-19,390000,13800,14.8,Available,Indonesia → Haldia,"Visakhapatnam,Paradip,Chennai,Haldia,Kamarajar"
+V025,MV Kakinada Pioneer,IMO 9877654,Handysize,38000,2021,Andaman Sea,10.1,92.8,2026-09-21,450000,15200,16.0,Available,Australia → Paradip,"Visakhapatnam,Paradip,Chennai,Haldia,Kamarajar"

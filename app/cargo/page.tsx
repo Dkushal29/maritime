@@ -82,15 +82,15 @@ export default function CargoPage() {
 
       {/* Commodity Selector Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1.5 p-1 bg-ocean-950/80 rounded-xl border border-electric/15">
+        <div className="flex flex-wrap gap-1.5 p-1 bg-[#102235] rounded-md border border-[#294154]">
           {COMMODITIES.map((c) => (
             <button
               key={c}
               onClick={() => setCargo(c as any)}
-              className={`px-4 py-2 rounded-lg text-xs font-display font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded text-xs font-mono font-semibold transition-colors cursor-pointer ${
                 cargo.toLowerCase().includes(c.toLowerCase())
-                  ? 'bg-electric text-white shadow-md shadow-electric/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-ocean-800/60'
+                  ? 'bg-[#162C40] text-[#35B8A6] border border-[#35B8A6]/40'
+                  : 'text-[#91A6B8] hover:text-[#E8F0F5] hover:bg-[#162C40]'
               }`}
             >
               {c}
@@ -103,7 +103,7 @@ export default function CargoPage() {
           <select
             value={destination}
             onChange={(e) => setDestination(e.target.value as any)}
-            className="bg-ocean-900 border border-electric/20 rounded-lg px-3 py-1.5 text-xs text-slate-100 outline-none font-mono"
+            className="bg-[#0B1726] border border-[#294154] rounded-md px-3 py-1.5 text-xs text-[#E8F0F5] outline-none font-mono"
           >
             <option value="Visakhapatnam">Visakhapatnam Port</option>
             <option value="Paradip">Paradip Port</option>
@@ -115,7 +115,7 @@ export default function CargoPage() {
           <select
             value={horizon}
             onChange={(e) => setHorizon(e.target.value as any)}
-            className="bg-ocean-900 border border-electric/20 rounded-lg px-3 py-1.5 text-xs text-slate-100 outline-none font-mono"
+            className="bg-[#0B1726] border border-[#294154] rounded-md px-3 py-1.5 text-xs text-[#E8F0F5] outline-none font-mono"
           >
             <option value="30D">30 Days</option>
             <option value="60D">60 Days</option>
@@ -126,45 +126,45 @@ export default function CargoPage() {
 
       {/* 4 Procurement Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
-        <div className="glass rounded-xl p-4 border border-cyan/20">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Current Stock Inventory</div>
-          <div className="text-2xl font-bold text-cyan">{currentInv.toLocaleString()} <span className="text-xs text-slate-400 font-normal">MT</span></div>
-          <div className="text-[10px] text-slate-500 mt-1">Safety buffer: 15,000 MT</div>
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154]">
+          <div className="text-[10px] text-[#91A6B8] uppercase tracking-wider mb-1">Current Stock Inventory</div>
+          <div className="text-2xl font-bold text-[#35B8A6]">{currentInv.toLocaleString()} <span className="text-xs text-[#91A6B8] font-normal">MT</span></div>
+          <div className="text-[10px] text-[#91A6B8] mt-1">Safety buffer: 15,000 MT</div>
         </div>
 
-        <div className="glass rounded-xl p-4 border border-electric/20">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Forecast Demand ({horizon})</div>
-          <div className="text-2xl font-bold text-electric-light">{projDemand.toLocaleString()} <span className="text-xs text-slate-400 font-normal">MT</span></div>
-          <div className="text-[10px] text-emerald-400 mt-1">+6.2% seasonal surge</div>
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154]">
+          <div className="text-[10px] text-[#91A6B8] uppercase tracking-wider mb-1">Forecast Demand ({horizon})</div>
+          <div className="text-2xl font-bold text-[#5D9BC4]">{projDemand.toLocaleString()} <span className="text-xs text-[#91A6B8] font-normal">MT</span></div>
+          <div className="text-[10px] text-[#6DAF91] mt-1">+6.2% seasonal surge</div>
         </div>
 
-        <div className="glass rounded-xl p-4 border border-amber-500/20">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Recommended Procurement</div>
-          <div className="text-2xl font-bold text-amber-400">{procReq.toLocaleString()} <span className="text-xs text-slate-400 font-normal">MT</span></div>
-          <div className="text-[10px] text-amber-300 mt-1">Procure within 10 days</div>
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154]">
+          <div className="text-[10px] text-[#91A6B8] uppercase tracking-wider mb-1">Recommended Procurement</div>
+          <div className="text-2xl font-bold text-[#D6A24A]">{procReq.toLocaleString()} <span className="text-xs text-[#91A6B8] font-normal">MT</span></div>
+          <div className="text-[10px] text-[#D6A24A] mt-1">Procure within 10 days</div>
         </div>
 
-        <div className="glass rounded-xl p-4 border border-emerald-500/20">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Inventory Coverage</div>
-          <div className="text-2xl font-bold text-emerald-400">{covDays} <span className="text-xs text-slate-400 font-normal">Days</span></div>
-          <div className="text-[10px] text-slate-400 mt-1">Daily burn ~7.4k MT/d</div>
+        <div className="bg-[#102235] rounded-lg p-4 border border-[#294154]">
+          <div className="text-[10px] text-[#91A6B8] uppercase tracking-wider mb-1">Inventory Coverage</div>
+          <div className="text-2xl font-bold text-[#6DAF91]">{covDays} <span className="text-xs text-[#91A6B8] font-normal">Days</span></div>
+          <div className="text-[10px] text-[#91A6B8] mt-1">Daily burn ~7.4k MT/d</div>
         </div>
       </div>
 
       {/* Main Chart + Recommendation Split */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Inventory vs Demand Curve */}
-        <div className="lg:col-span-8 glass rounded-xl p-6 border border-electric/15 flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-[#102235] rounded-lg p-6 border border-[#294154] flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-display font-bold text-base text-slate-100 m-0">
+              <h3 className="font-display font-bold text-base text-[#E8F0F5] m-0">
                 {cargo} Stock Depletion & Projected Demand Curve
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[#91A6B8] mt-0.5">
                 {destination} plant storage vs consumption rate
               </p>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#D6A24A]/15 text-[#D6A24A] border border-[#D6A24A]/30 font-semibold">
               URGENCY: {urgency}
             </span>
           </div>
@@ -174,35 +174,35 @@ export default function CargoPage() {
 
         {/* Procurement Recommendation & Insight */}
         <div className="lg:col-span-4 flex flex-col gap-5">
-          <div className="rounded-2xl p-6 bg-gradient-to-br from-electric/15 via-ocean-900 to-ocean-950 border border-electric/30">
-            <div className="text-[10px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
+          <div className="rounded-lg p-6 bg-[#102235] border border-[#294154]">
+            <div className="text-[10px] text-[#35B8A6] font-mono tracking-wider uppercase mb-1 font-semibold">
               AI PROCUREMENT RECOMMENDATION
             </div>
-            <h3 className="font-display font-bold text-lg text-slate-100 mb-2">
+            <h3 className="font-display font-bold text-lg text-[#E8F0F5] mb-2">
               Procure {procReq.toLocaleString()} MT within 10 Days
             </h3>
-            <p className="text-xs text-slate-300 leading-relaxed mb-4">
+            <p className="text-xs text-[#91A6B8] leading-relaxed mb-4">
               Current inventory of {currentInv.toLocaleString()} MT will fall below the safety threshold in {covDays} days at projected consumption rates. Early chartering preserves stock coverage through upcoming peak demand.
             </p>
 
-            <div className="rounded-lg p-3 bg-ocean-950/70 border border-electric/20 text-xs font-mono mb-4">
-              <div className="flex justify-between py-1 border-b border-electric/10">
-                <span className="text-slate-400">Recommended Cargo:</span>
-                <span className="text-cyan font-bold">{cargo}</span>
+            <div className="rounded-md p-3 bg-[#0B1726] border border-[#294154] text-xs font-mono mb-4">
+              <div className="flex justify-between py-1 border-b border-[#294154]">
+                <span className="text-[#91A6B8]">Recommended Cargo:</span>
+                <span className="text-[#35B8A6] font-bold">{cargo}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-electric/10">
-                <span className="text-slate-400">Target Port:</span>
-                <span className="text-slate-200">{destination}</span>
+              <div className="flex justify-between py-1 border-b border-[#294154]">
+                <span className="text-[#91A6B8]">Target Port:</span>
+                <span className="text-[#E8F0F5]">{destination}</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-400">Procurement Window:</span>
-                <span className="text-amber-400 font-bold">Next 7–10 Days</span>
+                <span className="text-[#91A6B8]">Procurement Window:</span>
+                <span className="text-[#D6A24A] font-bold">Next 7–10 Days</span>
               </div>
             </div>
 
             <button
               onClick={() => window.location.href = '/optimization'}
-              className="w-full py-2.5 rounded-lg ai-gradient text-white text-xs font-display font-bold cursor-pointer hover:opacity-95 shadow-md shadow-electric/20 border border-white/15"
+              className="w-full py-2.5 rounded-md bg-[#35B8A6] hover:bg-[#35B8A6]/90 text-[#0B1726] text-xs font-bold transition-colors cursor-pointer"
             >
               Optimize Charter Fleet for this Cargo →
             </button>

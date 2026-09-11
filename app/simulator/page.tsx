@@ -72,7 +72,7 @@ export default function WhatIfSimulatorPage() {
   const isHigh = riskStr === 'HIGH';
   const isCrit = riskStr === 'CRITICAL';
 
-  const riskColor = isCrit || isHigh ? '#EF4444' : isMed ? '#F59E0B' : '#10B981';
+  const riskColor = isCrit || isHigh ? '#C96B6B' : isMed ? '#D6A24A' : '#6DAF91';
 
   const chartData = [
     { d: 'Base', freight: baseFreight, sim: baseFreight },
@@ -121,13 +121,13 @@ export default function WhatIfSimulatorPage() {
 
       {/* Simulator Workspace Header */}
       <div>
-        <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
+        <div className="text-[11px] text-[#35B8A6] font-mono tracking-wider uppercase mb-1 font-semibold">
           ◆ INTERACTIVE SENSITIVITY CONTROLS
         </div>
-        <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-100 m-0">
+        <h2 className="font-display font-bold text-xl sm:text-2xl text-[#E8F0F5] m-0">
           Macro Shock Parameters
         </h2>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-[#91A6B8] mt-1">
           Adjust variable sliders to trigger immediate real-time sensitivity recalculation.
         </p>
       </div>
@@ -135,8 +135,8 @@ export default function WhatIfSimulatorPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Controls Column (4 cols) */}
         <div className="lg:col-span-4 flex flex-col gap-4">
-          <div className="glass rounded-xl p-5 border border-electric/15 space-y-5">
-            <div className="text-xs font-display font-bold text-slate-100 uppercase tracking-wider mb-2">
+          <div className="bg-[#102235] rounded-lg p-5 border border-[#294154] space-y-5">
+            <div className="text-xs font-display font-bold text-[#E8F0F5] uppercase tracking-wider mb-2">
               Macro Scenario Variables
             </div>
 
@@ -149,12 +149,12 @@ export default function WhatIfSimulatorPage() {
               step={10}
               onChange={setBunker}
               format={(v) => `$${v}`}
-              color="#F59E0B"
+              color="#D6A24A"
             />
 
             {/* Port Congestion */}
             <div>
-              <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+              <div className="text-[11px] font-mono text-[#91A6B8] uppercase tracking-wider mb-1.5">
                 East Coast Port Congestion
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -162,10 +162,10 @@ export default function WhatIfSimulatorPage() {
                   <button
                     key={c}
                     onClick={() => setCongestion(c)}
-                    className={`py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
+                    className={`py-1.5 rounded-md text-xs font-mono font-semibold transition-colors cursor-pointer ${
                       congestion === c
-                        ? 'bg-electric text-white shadow-md border border-electric'
-                        : 'bg-ocean-900 text-slate-400 border border-electric/15 hover:text-slate-200'
+                        ? 'bg-[#162C40] text-[#35B8A6] border border-[#35B8A6]/50'
+                        : 'bg-[#0B1726] text-[#91A6B8] border border-[#294154] hover:text-[#E8F0F5]'
                     }`}
                   >
                     {c}
@@ -183,12 +183,12 @@ export default function WhatIfSimulatorPage() {
               step={10}
               onChange={setDemand}
               format={(v) => `${v}k MT`}
-              color="#1683FF"
+              color="#35B8A6"
             />
 
             {/* Vessel Availability */}
             <div>
-              <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+              <div className="text-[11px] font-mono text-[#91A6B8] uppercase tracking-wider mb-1.5">
                 Vessel Availability in Basin
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -196,10 +196,10 @@ export default function WhatIfSimulatorPage() {
                   <button
                     key={a}
                     onClick={() => setAvailability(a)}
-                    className={`py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
+                    className={`py-1.5 rounded-md text-xs font-mono font-semibold transition-colors cursor-pointer ${
                       availability === a
-                        ? 'bg-cyan/20 text-cyan border border-cyan/40 shadow-md'
-                        : 'bg-ocean-900 text-slate-400 border border-electric/15 hover:text-slate-200'
+                        ? 'bg-[#162C40] text-[#35B8A6] border border-[#35B8A6]/50'
+                        : 'bg-[#0B1726] text-[#91A6B8] border border-[#294154] hover:text-[#E8F0F5]'
                     }`}
                   >
                     {a}
@@ -217,34 +217,34 @@ export default function WhatIfSimulatorPage() {
               step={5}
               onChange={setCommodity}
               format={(v) => `$${v}`}
-              color="#8B5CF6"
+              color="#5D9BC4"
             />
           </div>
 
           {/* Active Preset Summary */}
-          <div className="glass rounded-xl p-4 border border-electric/15 text-xs font-mono">
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-bold">
+          <div className="bg-[#102235] rounded-lg p-4 border border-[#294154] text-xs font-mono">
+            <div className="text-[10px] text-[#91A6B8] uppercase tracking-wider mb-2 font-semibold">
               ACTIVE STRESS PRESET
             </div>
-            <div className="space-y-1.5 text-slate-300 divide-y divide-electric/10">
+            <div className="space-y-1.5 text-[#E8F0F5] divide-y divide-[#294154]">
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Bunker:</span>
+                <span className="text-[#91A6B8]">Bunker:</span>
                 <span>${bunker}/MT</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Congestion:</span>
-                <span className={congestion === 'High' ? 'text-amber-400 font-bold' : ''}>{congestion}</span>
+                <span className="text-[#91A6B8]">Congestion:</span>
+                <span className={congestion === 'High' ? 'text-[#D6A24A] font-bold' : ''}>{congestion}</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Demand:</span>
+                <span className="text-[#91A6B8]">Demand:</span>
                 <span>{demand}k MT</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Fleet Availability:</span>
+                <span className="text-[#91A6B8]">Fleet Availability:</span>
                 <span>{availability}</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Commodity:</span>
+                <span className="text-[#91A6B8]">Commodity:</span>
                 <span>${commodity}/MT</span>
               </div>
             </div>
@@ -256,36 +256,35 @@ export default function WhatIfSimulatorPage() {
           {/* Comparison Cards (Base vs Scenario) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Current Base */}
-            <div className="rounded-xl p-5 bg-cyan/5 border border-cyan/20">
-              <div className="text-[10px] text-cyan font-mono font-bold tracking-wider uppercase mb-3">
+            <div className="rounded-lg p-5 bg-[#102235] border border-[#294154]">
+              <div className="text-[10px] text-[#35B8A6] font-mono font-semibold tracking-wider uppercase mb-3">
                 CURRENT BASELINE
               </div>
               <div className="space-y-2 text-xs font-mono">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Freight Rate:</span>
-                  <span className="font-bold text-cyan">${baseFreight.toFixed(1)}/MT</span>
+                  <span className="text-[#91A6B8]">Freight Rate:</span>
+                  <span className="font-bold text-[#35B8A6]">${baseFreight.toFixed(1)}/MT</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Charter Cost:</span>
-                  <span className="font-bold text-cyan">${baseCost.toFixed(2)}M</span>
+                  <span className="text-[#91A6B8]">Charter Cost:</span>
+                  <span className="font-bold text-[#35B8A6]">${baseCost.toFixed(2)}M</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Risk Profile:</span>
-                  <span className="text-emerald-400 font-bold">Low Risk</span>
+                  <span className="text-[#91A6B8]">Risk Profile:</span>
+                  <span className="text-[#6DAF91] font-bold">Low Risk</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Model Confidence:</span>
-                  <span className="text-emerald-400">87%</span>
+                  <span className="text-[#91A6B8]">Model Confidence:</span>
+                  <span className="text-[#6DAF91]">87%</span>
                 </div>
               </div>
             </div>
 
             {/* Simulated Scenario */}
             <div
-              className="rounded-xl p-5 border transition-all"
+              className="rounded-lg p-5 border transition-colors bg-[#102235]"
               style={{
-                backgroundColor: `${riskColor}0a`,
-                borderColor: `${riskColor}33`,
+                borderColor: riskColor,
               }}
             >
               <div className="flex items-center justify-between mb-3">
@@ -296,7 +295,7 @@ export default function WhatIfSimulatorPage() {
                   className="px-2 py-0.5 rounded text-[9px] font-mono font-bold"
                   style={{
                     color: riskColor,
-                    backgroundColor: `${riskColor}20`,
+                    backgroundColor: `${riskColor}15`,
                     border: `1px solid ${riskColor}40`,
                   }}
                 >
@@ -306,43 +305,43 @@ export default function WhatIfSimulatorPage() {
 
               <div className="space-y-2 text-xs font-mono">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Freight Rate:</span>
-                  <span className="font-bold" style={{ color: simFreight > baseFreight ? '#EF4444' : '#10B981' }}>
+                  <span className="text-[#91A6B8]">Freight Rate:</span>
+                  <span className="font-bold" style={{ color: simFreight > baseFreight ? '#C96B6B' : '#6DAF91' }}>
                     ${simFreight.toFixed(1)}/MT
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Charter Cost:</span>
-                  <span className="font-bold" style={{ color: simCost > baseCost ? '#EF4444' : '#10B981' }}>
+                  <span className="text-[#91A6B8]">Charter Cost:</span>
+                  <span className="font-bold" style={{ color: simCost > baseCost ? '#C96B6B' : '#6DAF91' }}>
                     ${simCost.toFixed(2)}M
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Cost Impact Delta:</span>
-                  <span className="font-bold" style={{ color: deltaCost > 0 ? '#EF4444' : '#10B981' }}>
+                  <span className="text-[#91A6B8]">Cost Impact Delta:</span>
+                  <span className="font-bold" style={{ color: deltaCost > 0 ? '#C96B6B' : '#6DAF91' }}>
                     {deltaCost > 0 ? `+$${deltaCost}M` : `-$${Math.abs(deltaCost)}M`}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Solver Status:</span>
-                  <span className="text-slate-200">Converged ✓</span>
+                  <span className="text-[#91A6B8]">Solver Status:</span>
+                  <span className="text-[#E8F0F5]">Converged ✓</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Area Chart: Base Curve vs Simulated Shock */}
-          <div className="glass rounded-xl p-5 border border-electric/15">
+          <div className="bg-[#102235] rounded-lg p-5 border border-[#294154]">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <div className="text-[10px] text-cyan font-mono tracking-wider uppercase font-bold">
+                <div className="text-[10px] text-[#35B8A6] font-mono tracking-wider uppercase font-semibold">
                   ◆ SENSITIVITY TRAJECTORY
                 </div>
-                <h3 className="font-display font-bold text-sm text-slate-100 m-0">
+                <h3 className="font-display font-bold text-sm text-[#E8F0F5] m-0">
                   Freight Trajectory: Baseline vs Simulated Shock
                 </h3>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">30-Day Forward Window</span>
+              <span className="text-[10px] font-mono text-[#91A6B8]">30-Day Forward Window</span>
             </div>
 
             <div className="h-44 w-full">
@@ -350,28 +349,29 @@ export default function WhatIfSimulatorPage() {
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                   <defs>
                     <linearGradient id="baseGrd" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#22D3EE" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#5D9BC4" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#5D9BC4" stopOpacity={0.0} />
                     </linearGradient>
                     <linearGradient id="simGrd" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={riskColor} stopOpacity={0.25} />
                       <stop offset="95%" stopColor={riskColor} stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" vertical={false} />
-                  <XAxis dataKey="d" tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#64748B', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#294154" vertical={false} />
+                  <XAxis dataKey="d" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
                   <Tooltip
                     contentStyle={{
-                      background: 'rgba(11, 31, 54, 0.95)',
-                      border: '1px solid rgba(22, 131, 255, 0.25)',
-                      borderRadius: 8,
+                      background: '#102235',
+                      border: '1px solid #294154',
+                      borderRadius: 6,
                       fontSize: 11,
                       fontFamily: 'JetBrains Mono',
+                      color: '#E8F0F5',
                     }}
                     formatter={(v: any, n: any) => [`$${v}/MT`, n === 'freight' ? 'Base Freight' : 'Shock Scenario']}
                   />
-                  <Area type="monotone" dataKey="freight" stroke="#22D3EE" strokeWidth={2} fill="url(#baseGrd)" dot={false} />
+                  <Area type="monotone" dataKey="freight" stroke="#5D9BC4" strokeWidth={2} fill="url(#baseGrd)" dot={false} />
                   <Area
                     type="monotone"
                     dataKey="sim"
@@ -389,44 +389,44 @@ export default function WhatIfSimulatorPage() {
           {/* 5-Axis Radar Chart & AI Action Recommendation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Multi-Dimensional Radar Chart */}
-            <div className="glass rounded-xl p-5 border border-electric/15 flex flex-col justify-between">
-              <div className="text-[10px] text-cyan font-mono tracking-wider uppercase font-bold mb-2">
+            <div className="bg-[#102235] rounded-lg p-5 border border-[#294154] flex flex-col justify-between">
+              <div className="text-[10px] text-[#35B8A6] font-mono tracking-wider uppercase font-semibold mb-2">
                 MULTI-AXIS RISK PROFILE
               </div>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="rgba(22, 131, 255, 0.15)" />
-                    <PolarAngleAxis dataKey="metric" tick={{ fill: '#94A3B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} />
-                    <Radar name="Baseline" dataKey="base" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.2} />
-                    <Radar name="Simulated" dataKey="sim" stroke={riskColor} fill={riskColor} fillOpacity={0.3} />
+                    <PolarGrid stroke="#294154" />
+                    <PolarAngleAxis dataKey="metric" tick={{ fill: '#91A6B8', fontSize: 10, fontFamily: 'JetBrains Mono' }} />
+                    <Radar name="Baseline" dataKey="base" stroke="#5D9BC4" fill="#5D9BC4" fillOpacity={0.2} />
+                    <Radar name="Simulated" dataKey="sim" stroke={riskColor} fill={riskColor} fillOpacity={0.25} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Strategic Recommendation */}
-            <div className="rounded-xl p-5 bg-gradient-to-br from-electric/15 via-ocean-900 to-ocean-950 border border-electric/30 flex flex-col justify-between">
+            <div className="rounded-lg p-5 bg-[#102235] border border-[#294154] flex flex-col justify-between">
               <div>
-                <div className="text-[10px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
+                <div className="text-[10px] text-[#35B8A6] font-mono tracking-wider uppercase mb-1 font-semibold">
                   SIMULATION DECISION RECOMMENDATION
                 </div>
-                <h4 className="font-display font-bold text-base text-slate-100 mb-2">
+                <h4 className="font-display font-bold text-base text-[#E8F0F5] mb-2">
                   {simFreight > 35
                     ? 'Charter Immediately — Rising Fuel & Congestion Escalation'
                     : simFreight > 33
                     ? 'Charter within 3-5 Days — Window Narrowing'
                     : 'Maintain Standard 7-Day Window — Risk Contained'}
                 </h4>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans mb-3">
+                <p className="text-xs text-[#91A6B8] leading-relaxed font-sans mb-3">
                   {simulation?.aiRecommendation ||
                     `At $${bunker}/MT bunker and ${congestion} congestion, the simulated landed freight is $${simFreight}/MT. Immediate chartering avoids up to $${Math.max(120, deltaCost * 1000).toLocaleString()} in spot rate volatility.`}
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-electric/15 flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-400">Potential Cost Avoided:</span>
-                <span className="text-emerald-400 font-bold">
+              <div className="pt-3 border-t border-[#294154] flex items-center justify-between text-xs font-mono">
+                <span className="text-[#91A6B8]">Potential Cost Avoided:</span>
+                <span className="text-[#6DAF91] font-bold">
                   ${Math.max(180, Math.round(Math.abs(deltaCost) * 1000)).toLocaleString()}K
                 </span>
               </div>

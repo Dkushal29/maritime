@@ -85,6 +85,19 @@ export default function CommandPalette() {
             </div>
           )}
 
+          {(lowerQuery.includes('procure') || lowerQuery.includes('order') || lowerQuery.includes('buy') || lowerQuery.includes('stock')) && (
+            <div
+              onClick={() => handleNavigate('/procurement')}
+              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-slate-200 cursor-pointer hover:bg-emerald-500/20 transition-colors flex items-center justify-between"
+            >
+              <div>
+                <span className="font-bold text-emerald-400">Procurement Orders Module: </span>
+                <span>Enter cargo requirements (e.g. 50 tons coal), calculate logistics & generate orders</span>
+              </div>
+              <ArrowRight className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+            </div>
+          )}
+
           {/* Vessels Section */}
           {matchedVessels.length > 0 && (
             <div>

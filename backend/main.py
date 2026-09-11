@@ -20,19 +20,54 @@ from dotenv import load_dotenv
 
 from schemas.freight import FreightPredictionRequest, FreightPredictionResponse
 from schemas.demand import DemandPredictionRequest, DemandPredictionResponse
-from schemas.vessel import VesselItem
+from schemas.vessel import VesselItem, VesselPositionResponse, VesselFleetStatusResponse
 from schemas.optimization import OptimizationRequest, OptimizationResponse
 from schemas.simulation import SimulationRequest, SimulationResponse
 from schemas.route import RouteItem
 from schemas.analytics import OverallModelMetricsResponse, AlertItemSchema, CopilotRequest, CopilotResponse
+from schemas.procurement import (
+    ProcurementOrderCreateRequest,
+    ProcurementOrderResponse,
+    ProcurementEstimateResponse,
+    ProcurementOrderStatusUpdateRequest,
+)
+from schemas.source_status import SourcesStatusResponse, WeatherCondition, WeatherRouteResponse, PortCongestionResponse
+from schemas.planning import (
+    CargoPlanningRequest,
+    CargoPlanningResponse,
+    FreightForecastRequest,
+    FreightForecastResponse,
+    LandedCostRequest,
+    LandedCostResponse,
+)
 
 from services.freight_service import predict_freight, get_freight_model
 from services.demand_service import predict_demand, get_demand_model
-from services.vessel_service import get_all_vessels, get_vessel_by_id
+from services.vessel_service import get_all_vessels, get_vessel_by_id, get_vessel_position, get_vessels_status
 from services.optimization_service import run_charter_optimization
+from services.planning_service import execute_cargo_planning_workflow
+from services.forecasting_service import forecast_freight_rate
+from services.landed_cost_service import calculate_total_landed_cost
 from services.simulation_service import run_what_if_simulation
 from services.analytics_service import get_model_metadata, get_feature_correlations, get_routes
 from services.alert_service import generate_alerts
+from services.procurement_service import (
+    create_procurement_order,
+    get_all_procurement_orders,
+    get_procurement_order_by_id,
+    update_procurement_order_status,
+    evaluate_procurement_estimate,
+)
+from services.weather_service import get_point_weather, get_route_weather
+from services.port_service import get_all_ports, get_port_by_id, get_port_congestion
+from services.market_data_service import (
+    get_commodity_prices,
+    get_freight_rates,
+    get_fuel_prices,
+    get_market_data_status,
+)
+from services.source_service import evaluate_all_sources_status
+from db.database import init_db, log_sync
 from src.explainability import get_freight_feature_importance
 
 # Load environment configuration
@@ -52,14 +87,34 @@ logger = logging.getLogger("maritime_ai")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Pre-load ML models into memory once at application startup."""
+    """Pre-load ML models into memory, initialize database, and manage background data services."""
     logger.info("Initializing MARITIME AI backend services...")
+    init_db()
     freight_m = get_freight_model()
     demand_m = get_demand_model()
     logger.info(f"Freight Model loaded: {freight_m.model is not None}")
     logger.info(f"Demand Model loaded: {demand_m.model is not None}")
     logger.info(f"Application operational in {DATA_MODE} mode.")
+
+    # Start AISStream background consumer if selected
+    ais_provider = os.getenv("AIS_PROVIDER", "aisstream").lower().strip()
+    if ais_provider == "aisstream":
+        from services.ais.aisstream_provider import AISStreamManager
+        manager = AISStreamManager.get_instance()
+        manager.start()
+        logger.info("AISStream.io background telemetry service initialized.")
+
     yield
+
+    # Clean shutdown of AIS background tasks
+    if ais_provider == "aisstream":
+        try:
+            from services.ais.aisstream_provider import AISStreamManager
+            await AISStreamManager.get_instance().stop()
+            logger.info("AISStream.io background telemetry service cleanly stopped.")
+        except Exception as e:
+            logger.warning(f"Error during AISStream shutdown: {e}")
+
     logger.info("Shutting down MARITIME AI services.")
 
 
@@ -143,7 +198,94 @@ async def get_dashboard():
     }
 
 
-# Freight Forecasting Endpoint
+# ==========================================
+# SIH PROBLEM STATEMENT 26006 WORKFLOW ENDPOINTS
+# ==========================================
+
+@app.post("/api/v1/planning/cargo", response_model=CargoPlanningResponse, tags=["SIH 26006 Planning"])
+async def plan_cargo_workflow_endpoint(payload: CargoPlanningRequest):
+    """
+    Executes the complete SIH 26006 5-phase workflow:
+      Cargo Requirement -> Freight Forecasting -> Vessel Option Evaluation ->
+      Total Landed Cost Calculation -> Chartering and Procurement Recommendation.
+    """
+    try:
+        return execute_cargo_planning_workflow(payload)
+    except ValueError as ve:
+        raise HTTPException(status_code=422, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Planning workflow failure: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/forecast/freight", response_model=FreightForecastResponse, tags=["SIH 26006 Planning"])
+async def forecast_freight_endpoint(payload: FreightForecastRequest):
+    """
+    Predicts forward freight rate using historical data & XGBoost regression,
+    benchmarks against moving average & previous-value baselines, and returns
+    metrics and illustrative tags where applicable.
+    """
+    try:
+        return forecast_freight_rate(
+            origin=payload.origin,
+            destination=payload.destination,
+            cargo_type=payload.cargo_type,
+            vessel_class=payload.vessel_class or "Panamax",
+            forecast_days=payload.forecast_days
+        )
+    except Exception as e:
+        logger.error(f"Freight forecast failure: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/optimization/landed-cost", response_model=LandedCostResponse, tags=["SIH 26006 Planning"])
+async def landed_cost_endpoint(payload: LandedCostRequest):
+    """
+    Calculates transparent 8-component Total Landed Cost:
+    Cargo Purchase + Ocean Freight + Port Charges + Loading + Unloading +
+    Fuel-Related Cost + Expected Demurrage + Other Logistics Costs.
+    """
+    try:
+        return calculate_total_landed_cost(
+            cargo_type=payload.cargo_type,
+            cargo_quantity=payload.cargo_quantity,
+            origin=payload.origin,
+            destination_port=payload.destination_port,
+            supplier_price_per_tonne=payload.supplier_price_per_tonne,
+            freight_rate_per_tonne=payload.freight_rate_per_tonne,
+            vessel_class=payload.vessel_class or "Panamax",
+            port_waiting_days=payload.port_waiting_days
+        )
+    except Exception as e:
+        logger.error(f"Landed cost calculation failure: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/planning/history", tags=["SIH 26006 Planning"])
+async def get_planning_history_endpoint(limit: int = 10):
+    """Retrieves recent cargo planning runs persisted in SQLite database."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT p.plan_id, p.cargo_type, p.cargo_quantity, p.origin,
+                   p.destination_port, p.required_arrival_date, p.max_budget,
+                   p.created_at, o.recommended_plan, o.estimated_total_cost,
+                   o.estimated_cost_per_tonne, o.decision, o.data_status
+            FROM cargo_plans p
+            LEFT JOIN optimization_runs o ON p.plan_id = o.plan_id
+            ORDER BY p.created_at DESC
+            LIMIT ?
+        """, (limit,))
+        rows = [dict(r) for r in cursor.fetchall()]
+        conn.close()
+        return {"total": len(rows), "plans": rows}
+    except Exception as e:
+        logger.error(f"Failed to fetch planning history: {e}")
+        return {"total": 0, "plans": []}
+
+
+# Freight Forecasting Endpoint (Legacy / Direct)
 @app.post("/api/v1/predict/freight", response_model=FreightPredictionResponse, tags=["Forecasting"])
 async def predict_freight_endpoint(payload: FreightPredictionRequest):
     """Predicts forward freight rate trajectory using XGBoost."""
@@ -179,6 +321,12 @@ async def predict_demand_endpoint(payload: DemandPredictionRequest):
 
 
 # Vessel Intelligence Endpoints
+@app.get("/api/v1/vessels/status", response_model=VesselFleetStatusResponse, tags=["Vessels"])
+async def get_vessels_status_endpoint():
+    """Returns fleet telemetry status and coordinate availability."""
+    return get_vessels_status()
+
+
 @app.get("/api/v1/vessels", response_model=List[VesselItem], tags=["Vessels"])
 async def get_vessels_endpoint(
     type: Optional[str] = Query(None, description="Panamax, Capesize, Supramax"),
@@ -195,6 +343,15 @@ async def get_vessels_endpoint(
         min_dwt=min_dwt,
         max_dwt=max_dwt
     )
+
+
+@app.get("/api/v1/vessels/{vessel_id}/position", response_model=VesselPositionResponse, tags=["Vessels"])
+async def get_vessel_position_endpoint(vessel_id: str):
+    """Returns live coordinate and AIS navigation telemetry for a specific vessel."""
+    pos = get_vessel_position(vessel_id)
+    if not pos:
+        raise HTTPException(status_code=404, detail=f"Vessel {vessel_id} position unavailable.")
+    return pos
 
 
 @app.get("/api/v1/vessels/{vessel_id}", response_model=VesselItem, tags=["Vessels"])
@@ -370,6 +527,161 @@ async def copilot_endpoint(payload: CopilotRequest):
             ],
             "suggested_actions": ["Run MILP Optimizer", "Review Forecast Workspace"]
         }
+
+
+# Procurement Orders Endpoints
+@app.post("/api/v1/procurement/estimate", response_model=ProcurementEstimateResponse, tags=["Procurement"])
+async def estimate_procurement_endpoint(payload: ProcurementOrderCreateRequest):
+    """Calculates procurement logistics, transport mode, and landed cost estimate without persisting."""
+    try:
+        return evaluate_procurement_estimate(
+            commodity=payload.commodity,
+            grade=payload.grade,
+            quantity_tons=payload.quantity_tons,
+            forecast_demand=payload.forecast_demand_tons or payload.quantity_tons,
+            safety_stock=payload.safety_stock_tons,
+            current_inventory=payload.current_inventory_tons,
+            origin=payload.origin,
+            destination=payload.destination,
+        )
+    except Exception as e:
+        logger.error(f"Procurement estimate error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/procurement/orders", response_model=ProcurementOrderResponse, status_code=status.HTTP_201_CREATED, tags=["Procurement"])
+async def create_procurement_order_endpoint(payload: ProcurementOrderCreateRequest):
+    """Generates a new simulated bulk cargo procurement order."""
+    try:
+        return create_procurement_order(payload)
+    except Exception as e:
+        logger.error(f"Procurement order creation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/procurement/orders", response_model=List[ProcurementOrderResponse], tags=["Procurement"])
+async def get_procurement_orders_endpoint():
+    """Retrieves all simulated procurement orders."""
+    return get_all_procurement_orders()
+
+
+@app.get("/api/v1/procurement/orders/{order_id}", response_model=ProcurementOrderResponse, tags=["Procurement"])
+async def get_procurement_order_endpoint(order_id: str):
+    """Retrieves a single simulated procurement order by order ID."""
+    order = get_procurement_order_by_id(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Procurement order {order_id} not found.")
+    return order
+
+
+@app.patch("/api/v1/procurement/orders/{order_id}/status", response_model=ProcurementOrderResponse, tags=["Procurement"])
+async def update_procurement_order_status_endpoint(order_id: str, payload: ProcurementOrderStatusUpdateRequest):
+    """Updates status for a simulated procurement order."""
+    order = update_procurement_order_status(order_id, payload.order_status)
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Procurement order {order_id} not found.")
+    return order
+
+
+# ==============================================================================
+# Port Operations Endpoints
+# ==============================================================================
+@app.get("/api/v1/ports", tags=["Ports"])
+async def get_ports_endpoint():
+    """Returns Indian East Coast ports with coordinates and infrastructure capabilities."""
+    return get_all_ports()
+
+
+@app.get("/api/v1/ports/{port_id}", tags=["Ports"])
+async def get_port_endpoint(port_id: str):
+    """Returns detailed infrastructure information for a specific port."""
+    p = get_port_by_id(port_id)
+    if not p:
+        raise HTTPException(status_code=404, detail=f"Port {port_id} not found.")
+    return p
+
+
+@app.get("/api/v1/ports/{port_id}/congestion", response_model=PortCongestionResponse, tags=["Ports"])
+async def get_port_congestion_endpoint(port_id: str):
+    """Returns port congestion metrics or explicit UNAVAILABLE state if live feed missing."""
+    return get_port_congestion(port_id)
+
+
+# ==============================================================================
+# Marine Weather & Ocean Conditions Endpoints
+# ==============================================================================
+@app.get("/api/v1/weather/point", response_model=WeatherCondition, tags=["Weather"])
+async def get_point_weather_endpoint(
+    lat: float = Query(..., ge=-90.0, le=90.0, description="Latitude"),
+    lon: float = Query(..., ge=-180.0, le=180.0, description="Longitude")
+):
+    """Fetches real-time wave height, wind, and sea conditions from Open-Meteo Marine API."""
+    return await get_point_weather(latitude=lat, longitude=lon)
+
+
+@app.get("/api/v1/weather/route", response_model=WeatherRouteResponse, tags=["Weather"])
+async def get_route_weather_endpoint(
+    route_id: str = Query("R001", description="Route corridor ID (e.g. R001, R002)")
+):
+    """Evaluates marine weather risks and delays across shipping corridor waypoints."""
+    return await get_route_weather(route_id=route_id)
+
+
+# ==============================================================================
+# Market Benchmarks Endpoints (Commodities, Bunker Fuel, Freight)
+# ==============================================================================
+@app.get("/api/v1/commodities/prices", tags=["Market Data"])
+async def get_commodities_prices_endpoint():
+    """Returns live or historical commodity benchmark prices (Coal, Iron Ore, Grain)."""
+    return await get_commodity_prices()
+
+
+@app.get("/api/v1/freight-rates", tags=["Market Data"])
+async def get_freight_rates_endpoint():
+    """Returns Baltic Exchange freight rate benchmarks."""
+    return await get_freight_rates()
+
+
+@app.get("/api/v1/fuel-prices", tags=["Market Data"])
+async def get_fuel_prices_endpoint():
+    """Returns spot and regional bunker fuel prices (VLSFO, LSMGO, Brent)."""
+    return await get_fuel_prices()
+
+
+@app.get("/api/v1/market-data/status", tags=["Market Data"])
+async def get_market_status_endpoint():
+    """Returns market data provider connectivity status."""
+    return get_market_data_status()
+
+
+# ==============================================================================
+# Sources Audit Registry Endpoint
+# ==============================================================================
+@app.get("/api/v1/sources/status", response_model=SourcesStatusResponse, tags=["Sources"])
+async def get_sources_status_endpoint():
+    """Audits health, latency, and data status across all upstream feeds."""
+    return await evaluate_all_sources_status()
+
+
+# ==============================================================================
+# Background / Scheduled Synchronization
+# ==============================================================================
+@app.post("/api/v1/sync/{feed_type}", tags=["Synchronization"])
+async def sync_feed_endpoint(feed_type: str):
+    """Triggers on-demand synchronization and cache refresh for a data feed."""
+    clean_feed = feed_type.lower().strip()
+    if clean_feed in ("weather", "all"):
+        await get_point_weather(17.68, 83.21)
+    if clean_feed in ("commodities", "all"):
+        await get_commodity_prices()
+    if clean_feed in ("fuel", "all"):
+        await get_fuel_prices()
+    if clean_feed in ("vessels", "all"):
+        from services.ais.ais_service import get_live_vessels
+        await get_live_vessels(limit=25)
+    
+    log_sync(feed_name=feed_type.capitalize(), provider="Manual Trigger", status="COMPLETED")
+    return {"status": "synchronized", "feed": clean_feed, "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 if __name__ == "__main__":

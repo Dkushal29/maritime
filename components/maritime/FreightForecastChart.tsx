@@ -37,28 +37,28 @@ export const FreightForecastChart: React.FC<FreightForecastChartProps> = ({
           <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <defs>
               <linearGradient id="actualGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#22D3EE" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#5D9BC4" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#5D9BC4" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="predGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#1683FF" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#1683FF" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#35B8A6" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#35B8A6" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="confGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.12} />
-                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="#5D9BC4" stopOpacity={0.08} />
+                <stop offset="95%" stopColor="#5D9BC4" stopOpacity={0.01} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(22, 131, 255, 0.08)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#294154" strokeOpacity={0.4} vertical={false} />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#64748B', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+              tick={{ fill: '#91A6B8', fontSize: 11, fontFamily: 'JetBrains Mono' }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: '#64748B', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+              tick={{ fill: '#91A6B8', fontSize: 11, fontFamily: 'JetBrains Mono' }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => `$${v}`}
@@ -66,10 +66,11 @@ export const FreightForecastChart: React.FC<FreightForecastChartProps> = ({
             />
             <Tooltip
               contentStyle={{
-                background: 'rgba(11, 31, 54, 0.95)',
-                border: '1px solid rgba(22, 131, 255, 0.25)',
-                borderRadius: 8,
+                backgroundColor: '#102235',
+                border: '1px solid #294154',
+                borderRadius: 6,
                 fontSize: 11,
+                color: '#E8F0F5',
                 fontFamily: 'JetBrains Mono',
               }}
               formatter={(val: any, name: any) => [
@@ -95,55 +96,55 @@ export const FreightForecastChart: React.FC<FreightForecastChartProps> = ({
             <Line
               type="monotone"
               dataKey="upperCI"
-              stroke="#8B5CF6"
+              stroke="#5D9BC4"
               strokeWidth={1}
               strokeDasharray="3 3"
               dot={false}
-              opacity={0.6}
+              opacity={0.5}
             />
             <Line
               type="monotone"
               dataKey="lowerCI"
-              stroke="#8B5CF6"
+              stroke="#5D9BC4"
               strokeWidth={1}
               strokeDasharray="3 3"
               dot={false}
-              opacity={0.6}
+              opacity={0.5}
             />
 
             {/* Historical Trend */}
             <Area
               type="monotone"
               dataKey="actual"
-              stroke="#22D3EE"
-              strokeWidth={2.5}
+              stroke="#5D9BC4"
+              strokeWidth={2}
               fill="url(#actualGrad)"
               dot={false}
-              activeDot={{ r: 4, fill: '#22D3EE' }}
+              activeDot={{ r: 4, fill: '#5D9BC4' }}
             />
 
             {/* Forecast Trend */}
             <Area
               type="monotone"
               dataKey="predicted"
-              stroke="#1683FF"
-              strokeWidth={2.5}
+              stroke="#35B8A6"
+              strokeWidth={2}
               strokeDasharray="5 3"
               fill="url(#predGrad)"
               dot={false}
-              activeDot={{ r: 5, fill: '#1683FF' }}
+              activeDot={{ r: 4, fill: '#35B8A6' }}
             />
 
             {todayMarkerDate && (
               <ReferenceLine
                 x={todayMarkerDate}
-                stroke="#F59E0B"
+                stroke="#D6A24A"
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
                 label={{
                   value: 'TODAY',
                   position: 'top',
-                  fill: '#F59E0B',
+                  fill: '#D6A24A',
                   fontSize: 10,
                   fontFamily: 'JetBrains Mono',
                   fontWeight: 600,
@@ -155,21 +156,21 @@ export const FreightForecastChart: React.FC<FreightForecastChartProps> = ({
       </div>
 
       {/* Chart Legend */}
-      <div className="flex flex-wrap items-center gap-5 mt-3 text-xs font-mono text-slate-400">
+      <div className="flex flex-wrap items-center gap-5 mt-3 text-xs font-mono text-[#91A6B8]">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-cyan rounded" />
+          <div className="w-4 h-0.5 bg-[#5D9BC4] rounded" />
           <span>Historical Freight</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-electric border-t-2 border-dashed border-electric" />
+          <div className="w-4 h-0.5 bg-[#35B8A6] border-t-2 border-dashed border-[#35B8A6]" />
           <span>Ensemble Forecast (XGBoost + Chronos)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-purple-ai opacity-60" />
+          <div className="w-4 h-0.5 bg-[#5D9BC4] opacity-50" />
           <span>Prediction Interval (P10 — P90)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-amber-400" />
+          <div className="w-2 h-2 rounded-full bg-[#D6A24A]" />
           <span>Forecast Anchor</span>
         </div>
       </div>

@@ -27,23 +27,23 @@ export default function GlobalFilterBar() {
   } = useAppStore();
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-[#131C31] border border-[#1E293B] rounded-xl shadow-sm mb-6">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-        <Filter className="w-4 h-4 text-cyan-400" />
-        <span className="uppercase font-mono text-[11px] text-slate-400">Global Filters:</span>
+    <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#102235] border border-[#294154] rounded-lg shadow-sm mb-6">
+      <div className="flex items-center gap-2 text-xs font-semibold text-[#E8F0F5]">
+        <Filter className="w-4 h-4 text-[#35B8A6]" />
+        <span className="uppercase font-mono text-[11px] text-[#91A6B8]">Global Filters:</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         {/* Origin */}
-        <div className="flex items-center gap-1.5 bg-[#0B1120] border border-[#1E293B] rounded-lg px-2.5 py-1">
-          <label className="text-[10px] font-mono text-slate-400 uppercase">Origin:</label>
+        <div className="flex items-center gap-1.5 bg-[#0B1726] border border-[#294154] rounded-md px-2.5 py-1">
+          <label className="text-[10px] font-mono text-[#91A6B8] uppercase">Origin:</label>
           <select
             value={origin}
             onChange={(e) => setOrigin(e.target.value as Origin)}
-            className="bg-transparent text-xs font-semibold text-slate-200 outline-none cursor-pointer"
+            className="bg-transparent text-xs font-semibold text-[#E8F0F5] outline-none cursor-pointer"
           >
             {origins.map((o) => (
-              <option key={o} value={o} className="bg-[#131C31] text-slate-200">
+              <option key={o} value={o} className="bg-[#102235] text-[#E8F0F5]">
                 {o}
               </option>
             ))}
@@ -51,15 +51,15 @@ export default function GlobalFilterBar() {
         </div>
 
         {/* Destination */}
-        <div className="flex items-center gap-1.5 bg-[#0B1120] border border-[#1E293B] rounded-lg px-2.5 py-1">
-          <label className="text-[10px] font-mono text-slate-400 uppercase">Dest:</label>
+        <div className="flex items-center gap-1.5 bg-[#0B1726] border border-[#294154] rounded-md px-2.5 py-1">
+          <label className="text-[10px] font-mono text-[#91A6B8] uppercase">Dest:</label>
           <select
             value={destination}
             onChange={(e) => setDestination(e.target.value as Destination)}
-            className="bg-transparent text-xs font-semibold text-slate-200 outline-none cursor-pointer"
+            className="bg-transparent text-xs font-semibold text-[#E8F0F5] outline-none cursor-pointer"
           >
             {destinations.map((d) => (
-              <option key={d} value={d} className="bg-[#131C31] text-slate-200">
+              <option key={d} value={d} className="bg-[#102235] text-[#E8F0F5]">
                 {d}
               </option>
             ))}
@@ -67,15 +67,15 @@ export default function GlobalFilterBar() {
         </div>
 
         {/* Cargo */}
-        <div className="flex items-center gap-1.5 bg-[#0B1120] border border-[#1E293B] rounded-lg px-2.5 py-1">
-          <label className="text-[10px] font-mono text-slate-400 uppercase">Cargo:</label>
+        <div className="flex items-center gap-1.5 bg-[#0B1726] border border-[#294154] rounded-md px-2.5 py-1">
+          <label className="text-[10px] font-mono text-[#91A6B8] uppercase">Cargo:</label>
           <select
             value={cargo}
             onChange={(e) => setCargo(e.target.value as CargoType)}
-            className="bg-transparent text-xs font-semibold text-slate-200 outline-none cursor-pointer"
+            className="bg-transparent text-xs font-semibold text-[#E8F0F5] outline-none cursor-pointer"
           >
             {commodities.map((c) => (
-              <option key={c} value={c} className="bg-[#131C31] text-slate-200">
+              <option key={c} value={c} className="bg-[#102235] text-[#E8F0F5]">
                 {c}
               </option>
             ))}
@@ -83,15 +83,15 @@ export default function GlobalFilterBar() {
         </div>
 
         {/* Vessel Type */}
-        <div className="flex items-center gap-1.5 bg-[#0B1120] border border-[#1E293B] rounded-lg px-2.5 py-1">
-          <label className="text-[10px] font-mono text-slate-400 uppercase">Vessel:</label>
+        <div className="flex items-center gap-1.5 bg-[#0B1726] border border-[#294154] rounded-md px-2.5 py-1">
+          <label className="text-[10px] font-mono text-[#91A6B8] uppercase">Vessel:</label>
           <select
             value={vesselType}
             onChange={(e) => setVesselType(e.target.value as VesselType)}
-            className="bg-transparent text-xs font-semibold text-slate-200 outline-none cursor-pointer"
+            className="bg-transparent text-xs font-semibold text-[#E8F0F5] outline-none cursor-pointer"
           >
             {vesselTypes.map((v) => (
-              <option key={v} value={v} className="bg-[#131C31] text-slate-200">
+              <option key={v} value={v} className="bg-[#102235] text-[#E8F0F5]">
                 {v}
               </option>
             ))}
@@ -99,15 +99,15 @@ export default function GlobalFilterBar() {
         </div>
 
         {/* Horizon */}
-        <div className="flex items-center gap-1 bg-[#0B1120] border border-[#1E293B] rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-[#0B1726] border border-[#294154] rounded-md p-0.5">
           {horizons.map((h) => (
             <button
               key={h}
               onClick={() => setDateRange(h)}
-              className={`px-2 py-1 text-[10px] font-mono font-bold rounded-md transition-colors ${
+              className={`px-2 py-0.5 text-[10px] font-mono font-semibold rounded transition-colors ${
                 dateRange === h
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#162C40] text-[#35B8A6] border border-[#35B8A6]/40'
+                  : 'text-[#91A6B8] hover:text-[#E8F0F5]'
               }`}
             >
               {h}
@@ -118,7 +118,7 @@ export default function GlobalFilterBar() {
         {/* Reset Button */}
         <button
           onClick={resetFilters}
-          className="flex items-center gap-1 px-2.5 py-1 text-xs text-slate-400 hover:text-slate-200 bg-[#0B1120] border border-[#1E293B] rounded-lg transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1 text-xs text-[#91A6B8] hover:text-[#E8F0F5] bg-[#0B1726] border border-[#294154] rounded-md transition-colors cursor-pointer"
           title="Reset to default demo scenario"
         >
           <RotateCcw className="w-3 h-3" />
