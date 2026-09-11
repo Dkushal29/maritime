@@ -5,6 +5,7 @@ import { getAlerts } from '@/lib/api';
 import { AlertItem } from '@/types';
 import { AlertCard } from '@/components/maritime/AlertCard';
 import { PageHero } from '@/components/maritime/PageHero';
+import { DataSourceBadge } from '@/components/ui/DataSourceBadge';
 
 const CATEGORIES = ['All', 'CRITICAL', 'WARNING', 'OPPORTUNITY', 'INFO'] as const;
 
@@ -107,8 +108,11 @@ export default function AlertsPage() {
           })}
         </div>
 
-        <div className="text-xs font-mono text-slate-400">
-          Showing <strong className="text-cyan font-bold">{filtered.length}</strong> active notifications
+        <div className="flex items-center gap-3">
+          <DataSourceBadge type="model" label="Model & Telemetry" tooltip="Alert triggers computed from XGBoost volatility predictions and terminal coverage models" />
+          <div className="text-xs font-mono text-slate-400">
+            Showing <strong className="text-cyan font-bold">{filtered.length}</strong> active notifications
+          </div>
         </div>
       </div>
 

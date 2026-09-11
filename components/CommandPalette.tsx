@@ -4,12 +4,38 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Ship, MapPin, TrendingUp, AlertTriangle, X, ArrowRight } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { mockVessels, mockRouteMetrics, mockAlerts } from '@/data/mockData';
+import { getVessels, getRouteAnalytics, getAlerts } from '@/lib/api';
+import { Vessel, RouteMetric, AlertItem } from '@/types';
 
 export default function CommandPalette() {
   const router = useRouter();
   const { isCommandPaletteOpen, setCommandPaletteOpen } = useAppStore();
   const [query, setQuery] = useState('');
+  const [vessels, setVessels] = useState<Vessel[]>([]);
+  const [routes, setRoutes] = useState<RouteMetric[]>([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (isCommandPaletteOpen) {
+      setIsLoading(true);
+      Promise.all([
+        getVessels().catch(() => []),
+        getRouteAnalytics().catch(() => []),
+        getAlerts().catch(() => []),
+      ]).then(([vesselsData, routesData, alertsData]) => {
+        if (!isMounted) return;
+        setVessels(vesselsData || []);
+        setRoutes(routesData || []);
+        setAlerts(alertsData || []);
+        setIsLoading(false);
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [isCommandPaletteOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -29,20 +55,20 @@ export default function CommandPalette() {
 
   const lowerQuery = query.toLowerCase();
 
-  const matchedVessels = mockVessels.filter(
+  const matchedVessels = vessels.filter(
     (v) =>
       v.name.toLowerCase().includes(lowerQuery) ||
       v.type.toLowerCase().includes(lowerQuery) ||
       v.id.toLowerCase().includes(lowerQuery)
   );
 
-  const matchedRoutes = mockRouteMetrics.filter(
+  const matchedRoutes = routes.filter(
     (r) =>
       r.origin.toLowerCase().includes(lowerQuery) ||
       r.destination.toLowerCase().includes(lowerQuery)
   );
 
-  const matchedAlerts = mockAlerts.filter(
+  const matchedAlerts = alerts.filter(
     (a) =>
       a.title.toLowerCase().includes(lowerQuery) ||
       a.description.toLowerCase().includes(lowerQuery)
@@ -177,7 +203,14 @@ export default function CommandPalette() {
 
         {/* Footer info */}
         <div className="flex items-center justify-between px-4 py-2 bg-[#090E1C] border-t border-[#1E293B] text-[10px] font-mono text-slate-500">
-          <span>MARITIME AI Global Index</span>
+          <div className="flex items-center gap-2">
+            <span>MARITIME AI Global Index</span>
+            {isLoading ? (
+              <span className="text-cyan-400 animate-pulse">• Syncing API...</span>
+            ) : (
+              <span className="text-emerald-400">• Sourced via Live API</span>
+            )}
+          </div>
           <span>Press ESC to close</span>
         </div>
       </div>

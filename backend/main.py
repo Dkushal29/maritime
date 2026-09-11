@@ -33,6 +33,8 @@ from services.optimization_service import run_charter_optimization
 from services.simulation_service import run_what_if_simulation
 from services.analytics_service import get_model_metadata, get_feature_correlations, get_routes
 from services.alert_service import generate_alerts
+from services.ais_service import start_ais_listener, stop_ais_listener, get_live_traffic
+from services.market_data_service import get_market_data
 from src.explainability import get_freight_feature_importance
 
 # Load environment configuration
@@ -59,7 +61,9 @@ async def lifespan(app: FastAPI):
     logger.info(f"Freight Model loaded: {freight_m.model is not None}")
     logger.info(f"Demand Model loaded: {demand_m.model is not None}")
     logger.info(f"Application operational in {DATA_MODE} mode.")
+    start_ais_listener()
     yield
+    await stop_ais_listener()
     logger.info("Shutting down MARITIME AI services.")
 
 
@@ -281,6 +285,20 @@ async def get_correlation_endpoint():
 async def get_alerts_endpoint():
     """Returns deterministic operational alerts."""
     return generate_alerts()
+
+
+# Live Traffic Endpoint
+@app.get("/api/v1/live-traffic", tags=["Live Data"])
+async def get_live_traffic_endpoint():
+    """Returns real-time AIS vessel stream data."""
+    return get_live_traffic()
+
+
+# Market Data Endpoint
+@app.get("/api/v1/market-data", tags=["Live Data"])
+async def get_market_data_endpoint(force_refresh: bool = False):
+    """Returns real-time FX and commodity spot prices."""
+    return await get_market_data(force_refresh=force_refresh)
 
 
 # Freight AI Copilot Endpoint

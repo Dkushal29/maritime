@@ -8,6 +8,7 @@ import { FreightForecastChart } from '@/components/maritime/FreightForecastChart
 import { FreightDriverCard } from '@/components/maritime/FreightDriverCard';
 import { AIInsight } from '@/components/maritime/AIInsight';
 import { PageHero } from '@/components/maritime/PageHero';
+import { DataSourceBadge } from '@/components/ui/DataSourceBadge';
 
 const HORIZONS: ForecastHorizon[] = ['7D', '30D', '60D', '90D'];
 
@@ -334,11 +335,18 @@ export default function ForecastPage() {
             <div className="lg:col-span-8 glass rounded-xl p-6 border border-electric/15 flex flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="font-display font-bold text-lg text-slate-100 m-0">
-                    {origin} → {destination} Multi-Model Rate Projection ({horizon})
-                  </h3>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className="font-display font-bold text-lg text-slate-100 m-0">
+                      {origin} → {destination} Multi-Model Rate Projection ({horizon})
+                    </h3>
+                    <DataSourceBadge
+                      type="model"
+                      label="Model Forecast"
+                      tooltip="Projected using trained XGBoost regression model with confidence intervals"
+                    />
+                  </div>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {vesselType} · {cargo} · Solid historical curve + dashed ensemble forward projection with P10/P90 band
+                    {vesselType} · {cargo} · Solid historical curve + dashed forward projection with P10/P90 band
                   </p>
                 </div>
                 <div className="text-right font-mono">
