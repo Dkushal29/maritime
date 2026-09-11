@@ -25,6 +25,16 @@ import {
   CargoPlanningResponse,
   FreightForecastResult,
   LandedCostResult,
+  RouteCorridorItem,
+  RouteCompareResponse,
+  RouteAlertItem,
+  RouteRiskAssessmentResponse,
+  BerthItem,
+  BerthAvailabilityResponse,
+  AlternativePortResponse,
+  FleetAllocationResponse,
+  CharterBookingRecord,
+  RescheduleResponse,
 } from '../types';
 import {
   mockFreightPrediction,
@@ -1092,4 +1102,176 @@ export async function getPlanningHistory(limit: number = 10): Promise<{ total: n
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Dynamic Maritime Route Planning, Risk-Aware Routing, Berth & Booking Client API
+// ─────────────────────────────────────────────────────────────────────────────
 
+export async function getRouteCorridors(): Promise<RouteCorridorItem[]> {
+  const res = await fetch(`${API_BASE}/api/v1/routes/corridors`);
+  if (!res.ok) throw new Error(`Failed to fetch route corridors: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function compareMaritimeRoutes(payload: {
+  origin: string;
+  destination: string;
+  cargo_type?: string;
+  cargo_quantity?: number;
+  laycan_start?: string;
+  required_arrival_date?: string;
+  vessel_class?: string;
+}): Promise<RouteCompareResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/routes/compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to compare routes: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getCorridorAlerts(routeId: string): Promise<RouteAlertItem[]> {
+  const res = await fetch(`${API_BASE}/api/v1/routes/${encodeURIComponent(routeId)}/alerts`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function assessRouteRisk(origin: string, destination: string): Promise<RouteRiskAssessmentResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/routes/risk-assessment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ origin, destination }),
+  });
+  if (!res.ok) throw new Error(`Failed to assess route risk: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getPortBerths(portId: string): Promise<BerthItem[]> {
+  const res = await fetch(`${API_BASE}/api/v1/ports/${encodeURIComponent(portId)}/berths`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function checkBerthAvailability(
+  portId: string,
+  payload: {
+    requested_arrival: string;
+    estimated_stay_hours?: number;
+    vessel_dwt?: number;
+    vessel_draft?: number;
+    vessel_id?: string;
+  }
+): Promise<BerthAvailabilityResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/ports/${encodeURIComponent(portId)}/berth-availability`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to check berth availability: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getAlternativePortOptions(
+  portId: string,
+  payload: {
+    cargo_quantity: number;
+    cargo_type?: string;
+    vessel_draft?: number;
+    vessel_dwt?: number;
+  }
+): Promise<AlternativePortResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/ports/${encodeURIComponent(portId)}/alternative-options`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to evaluate alternative ports: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function allocateFleetCargo(payload: {
+  cargo_quantity: number;
+  cargo_type?: string;
+  origin: string;
+  destination: string;
+  delivery_deadline?: string;
+  maximum_budget: number;
+  preferred_vessel_class?: string;
+}): Promise<FleetAllocationResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/fleet/allocate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Fleet allocation failed: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getCharterBookings(): Promise<CharterBookingRecord[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/bookings`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function createCharterBooking(payload: {
+  cargo_plan_id?: string;
+  vessel_id: string;
+  origin_port: string;
+  destination_port: string;
+  selected_route_type: string;
+  selected_berth_id?: string;
+  planned_departure: string;
+  planned_arrival: string;
+  cargo_quantity: number;
+  cargo_type?: string;
+  estimated_total_cost: number;
+  notes?: string;
+}): Promise<CharterBookingRecord> {
+  const res = await fetch(`${API_BASE}/api/v1/bookings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Booking creation failed: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function rescheduleCharterBooking(
+  bookingId: string,
+  payload: {
+    reason: string;
+    preferred_option_type?: string;
+    new_arrival_date?: string;
+    new_port?: string;
+    new_vessel_id?: string;
+    confirm_changes?: boolean;
+  }
+): Promise<RescheduleResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/bookings/${encodeURIComponent(bookingId)}/reschedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Rescheduling failed: HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function cancelCharterBooking(
+  bookingId: string,
+  cancellation_reason: string
+): Promise<{ booking_id: string; current_status: string; message: string }> {
+  const res = await fetch(`${API_BASE}/api/v1/bookings/${encodeURIComponent(bookingId)}/cancel`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cancellation_reason }),
+  });
+  if (!res.ok) throw new Error(`Cancellation failed: HTTP ${res.status}`);
+  return res.json();
+}

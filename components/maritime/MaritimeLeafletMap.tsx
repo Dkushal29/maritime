@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { RouteMetric } from '@/types';
+import { RouteMetric, RouteOptionItem, RouteAlertItem } from '@/types';
 import {
   Compass,
   ZoomIn,
@@ -9,6 +9,7 @@ import {
   RefreshCw,
   AlertCircle,
   Ship,
+  ShieldAlert,
 } from 'lucide-react';
 import { getVessels } from '@/lib/api';
 import 'leaflet/dist/leaflet.css';
@@ -40,6 +41,14 @@ export interface MaritimeLeafletMapProps {
   selectedRoute?: RouteMetric | null;
   onSelectRoute?: (route: RouteMetric) => void;
   className?: string;
+  // Dual route planning props
+  routeComparison?: {
+    shortest?: RouteOptionItem;
+    lowestCost?: RouteOptionItem;
+  } | null;
+  selectedRouteKey?: 'shortest' | 'lowest_cost' | null;
+  onSelectRouteKey?: (key: 'shortest' | 'lowest_cost') => void;
+  alerts?: RouteAlertItem[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -288,6 +297,16 @@ const CORRIDOR_PATHS: Record<
   },
 };
 
+// Chokepoints along Indo-Pacific and Cape bulk corridors
+const CHOKEPOINTS: { name: string; lat: number; lng: number; desc: string }[] = [
+  { name: 'Strait of Malacca', lat: 2.5, lng: 101.5, desc: 'High-density TSS; strict draught & speed monitoring.' },
+  { name: 'Sunda Strait', lat: -5.9, lng: 105.8, desc: 'Alternative deep-water route between Java & Sumatra.' },
+  { name: 'Lombok Strait', lat: -8.5, lng: 115.7, desc: 'Capesize deep-water passage; strong tidal streams.' },
+  { name: 'Bab-el-Mandeb', lat: 12.6, lng: 43.3, desc: 'Southern entrance to Red Sea; naval escort zone.' },
+  { name: 'Strait of Hormuz', lat: 26.5, lng: 56.2, desc: 'Persian Gulf entry; high traffic density corridor.' },
+  { name: 'Cape of Good Hope', lat: -34.5, lng: 18.5, desc: 'Atlantic-Indian Ocean southern passage; high swell.' },
+];
+
 // Ocean and land region label data (rendered as non-interactive map labels)
 const REGION_LABELS = [
   { name: 'Bay of Bengal', lat: 14.5, lng: 88.0, isOcean: true  },
@@ -324,6 +343,10 @@ export default function MaritimeLeafletMap({
   selectedRoute,
   onSelectRoute,
   className = '',
+  routeComparison,
+  selectedRouteKey,
+  onSelectRouteKey,
+  alerts = [],
 }: MaritimeLeafletMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -418,103 +441,288 @@ export default function MaritimeLeafletMap({
   // ─── Render map entities into Leaflet layers ───────────────────────────────
   const renderMapEntities = useCallback(
     (L: any, _map: any, polylinesLayer: any, markersLayer: any, corridor: typeof CORRIDOR_PATHS[string]) => {
-      // 1. Secondary corridors — muted dashed lines
-      for (const [key, corr] of Object.entries(CORRIDOR_PATHS)) {
-        if (key === activeRouteKey) continue;
+      const hasDualPlanning = Boolean(routeComparison && (routeComparison.shortest || routeComparison.lowestCost));
 
-        const line = L.polyline(corr.coords, {
-          color: '#5D9BC4',
-          weight: 1.5,
-          opacity: 0.30,
-          dashArray: '6 8',
-          lineCap: 'round',
-        });
+      if (hasDualPlanning) {
+        // ─────────────────────────────────────────────────────────────────────
+        // Dual route planning mode: Route A (Shortest) & Route B (Lowest-Cost)
+        // ─────────────────────────────────────────────────────────────────────
 
-        line.bindTooltip(
-          `<div style="font-family:Inter,sans-serif;font-size:11px;padding:3px 6px">
-            <span style="color:#91A6B8;font-weight:600">${corr.from} → ${corr.to}</span>
-            <div style="color:#64748B;font-size:10px">${corr.distanceNm.toLocaleString()} nm · ${corr.avgTransitDays} days</div>
-          </div>`,
-          { sticky: true, opacity: 0.95, className: 'maritime-leaflet-tooltip' }
-        );
-        line.on('mouseover', function (this: any) {
-          this.setStyle({ opacity: 0.60, weight: 2.5 });
-        });
-        line.on('mouseout', function (this: any) {
-          this.setStyle({ opacity: 0.30, weight: 1.5 });
-        });
-        line.on('click', () => {
-          if (onSelectRoute) {
-            onSelectRoute({
-              id: corr.id,
-              origin: corr.from as any,
-              destination: corr.to as any,
-              avgFreightRate: 31.8,
-              transitTimeDays: corr.avgTransitDays,
-              avgTransitDays: corr.avgTransitDays,
-              distanceNm: corr.distanceNm,
-              portCongestionLevel: 'Low',
-              vesselAvailabilityCount: 5,
-              risk: 'LOW',
-              riskLevel: 'LOW',
-              estimatedLandedCostPerMt: 142.0,
-              isRecommended: false,
-              originCoords: corr.coords[0],
-              destCoords: corr.coords[corr.coords.length - 1],
-            });
+        // Route A — Shortest / Fastest (Muted Blue: #5D9BC4)
+        if (routeComparison?.shortest && routeComparison.shortest.waypoints?.length > 1) {
+          const optA = routeComparison.shortest;
+          const isSelected = selectedRouteKey === 'shortest' || (!selectedRouteKey && !routeComparison.lowestCost);
+
+          const lineA = L.polyline(optA.waypoints, {
+            color: '#5D9BC4',
+            weight: isSelected ? 3.5 : 2.0,
+            opacity: isSelected ? 0.95 : 0.40,
+            dashArray: isSelected ? undefined : '5 7',
+            lineCap: 'round',
+            lineJoin: 'round',
+          });
+
+          lineA.bindTooltip(
+            `<div style="font-family:Inter,sans-serif;font-size:11px;padding:3px 6px">
+              <span style="color:#5D9BC4;font-weight:700">Option A: Shortest / Fastest</span>
+              <div style="color:#91A6B8;font-size:10px">${optA.distance_nm.toLocaleString()} nm · ${optA.sailing_days}d @ ${optA.speed_knots} kts</div>
+              <div style="color:#E8F0F5;font-size:10px;font-weight:600">Voyage: $${optA.total_cost_usd?.toLocaleString()}</div>
+            </div>`,
+            { sticky: true, opacity: 0.95, className: 'maritime-leaflet-tooltip' }
+          );
+
+          lineA.bindPopup(
+            `<div style="font-family:Inter,sans-serif;font-size:12px;color:#E8F0F5;min-width:210px;padding:2px 0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:10px;color:#5D9BC4;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">Option A — Shortest Route</span>
+                <span style="font-size:9px;color:#91A6B8;font-mono">FAST STEAMING</span>
+              </div>
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:6px">${optA.origin} → ${optA.destination}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+                <div><div style="font-size:9px;color:#91A6B8">Distance</div><div style="font-size:12px;font-weight:600;color:#E8F0F5">${optA.distance_nm.toLocaleString()} nm</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Sailing Time</div><div style="font-size:12px;font-weight:600;color:#E8F0F5">${optA.sailing_days} days</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Total Cost</div><div style="font-size:12px;font-weight:600;color:#5D9BC4">$${optA.total_cost_usd?.toLocaleString()}</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Risk Score</div><div style="font-size:12px;font-weight:600;color:#E8F0F5">${optA.risk_score} / 100</div></div>
+              </div>
+              <div style="font-size:10px;color:#91A6B8;line-height:1.4;border-top:1px solid #294154;padding-top:4px">${optA.tradeoff_explanation}</div>
+            </div>`,
+            { className: 'maritime-leaflet-popup' }
+          );
+
+          lineA.on('click', () => onSelectRouteKey?.('shortest'));
+          lineA.addTo(polylinesLayer);
+
+          // Subtle intermediate waypoints
+          for (let i = 1; i < optA.waypoints.length - 1; i++) {
+            L.circleMarker(optA.waypoints[i], {
+              radius: 3,
+              color: '#0B1726',
+              fillColor: '#5D9BC4',
+              fillOpacity: 0.75,
+              weight: 1,
+              interactive: false,
+            }).addTo(markersLayer);
           }
-        });
-        line.addTo(polylinesLayer);
-      }
+        }
 
-      // 2. Selected corridor — restrained teal line (no animated glow)
-      L.polyline(corridor.coords, {
-        color: '#35B8A6',
-        weight: 2.5,
-        opacity: 0.85,
-        dashArray: '10 6',
-        lineCap: 'round',
-        lineJoin: 'round',
-      })
-        .bindPopup(
-          `<div style="font-family:Inter,sans-serif;font-size:12px;color:#E8F0F5;min-width:190px;padding:2px 0">
-            <div style="font-size:10px;color:#35B8A6;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px">
-              Selected Corridor
-            </div>
-            <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">
-              ${corridor.from} → ${corridor.to}
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-              <div><div style="font-size:9px;color:#91A6B8">Transit</div>
-                <div style="font-size:12px;font-weight:600;color:#E8F0F5">${corridor.avgTransitDays} days</div></div>
-              <div><div style="font-size:9px;color:#91A6B8">Distance</div>
-                <div style="font-size:12px;font-weight:600;color:#E8F0F5">${corridor.distanceNm.toLocaleString()} nm</div></div>
-              <div style="grid-column:1/-1"><div style="font-size:9px;color:#91A6B8">Commodity</div>
-                <div style="font-size:11px;font-weight:600;color:#E8F0F5">${corridor.commodity}</div></div>
-            </div>
-          </div>`,
-          { className: 'maritime-leaflet-popup' }
-        )
-        .bindTooltip(
-          `<div style="font-family:Inter,sans-serif;font-size:11px">
-            <span style="color:#35B8A6;font-weight:700">Active:</span> ${corridor.from} → ${corridor.to}
-            <div style="color:#91A6B8;font-size:10px">${corridor.distanceNm.toLocaleString()} nm · ${corridor.avgTransitDays} days</div>
-          </div>`,
-          { sticky: true, className: 'maritime-leaflet-tooltip' }
-        )
-        .addTo(polylinesLayer);
+        // Route B — Lowest Cost (Muted Teal: #35B8A6)
+        if (routeComparison?.lowestCost && routeComparison.lowestCost.waypoints?.length > 1) {
+          const optB = routeComparison.lowestCost;
+          const isSelected = selectedRouteKey === 'lowest_cost';
 
-      // 3. Intermediate waypoint dots on selected route (small, subtle)
-      for (let i = 1; i < corridor.coords.length - 1; i++) {
-        const pt = corridor.coords[i];
-        L.circleMarker(pt, {
-          radius: 3,
-          color: '#294154',
-          fillColor: '#35B8A6',
-          fillOpacity: 0.6,
-          weight: 1,
-          interactive: false,
-        }).addTo(markersLayer);
+          const lineB = L.polyline(optB.waypoints, {
+            color: '#35B8A6',
+            weight: isSelected ? 3.5 : 2.0,
+            opacity: isSelected ? 0.95 : 0.40,
+            dashArray: isSelected ? undefined : '5 7',
+            lineCap: 'round',
+            lineJoin: 'round',
+          });
+
+          lineB.bindTooltip(
+            `<div style="font-family:Inter,sans-serif;font-size:11px;padding:3px 6px">
+              <span style="color:#35B8A6;font-weight:700">Option B: Lowest Cost</span>
+              <div style="color:#91A6B8;font-size:10px">${optB.distance_nm.toLocaleString()} nm · ${optB.sailing_days}d @ ${optB.speed_knots} kts</div>
+              <div style="color:#35B8A6;font-size:10px;font-weight:600">Savings: -$${optB.cost_savings_usd?.toLocaleString()} vs A</div>
+            </div>`,
+            { sticky: true, opacity: 0.95, className: 'maritime-leaflet-tooltip' }
+          );
+
+          lineB.bindPopup(
+            `<div style="font-family:Inter,sans-serif;font-size:12px;color:#E8F0F5;min-width:210px;padding:2px 0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:10px;color:#35B8A6;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">Option B — Lowest Cost</span>
+                <span style="font-size:9px;color:#6DAF91;font-mono">ECO STEAMING</span>
+              </div>
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:6px">${optB.origin} → ${optB.destination}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+                <div><div style="font-size:9px;color:#91A6B8">Distance</div><div style="font-size:12px;font-weight:600;color:#E8F0F5">${optB.distance_nm.toLocaleString()} nm</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Sailing Time</div><div style="font-size:12px;font-weight:600;color:#E8F0F5">${optB.sailing_days} days</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Total Cost</div><div style="font-size:12px;font-weight:600;color:#35B8A6">$${optB.total_cost_usd?.toLocaleString()}</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Cost / MT</div><div style="font-size:12px;font-weight:600;color:#E8F0F5">$${optB.cost_per_ton_usd?.toFixed(2)}</div></div>
+              </div>
+              <div style="font-size:10px;color:#91A6B8;line-height:1.4;border-top:1px solid #294154;padding-top:4px">${optB.tradeoff_explanation}</div>
+            </div>`,
+            { className: 'maritime-leaflet-popup' }
+          );
+
+          lineB.on('click', () => onSelectRouteKey?.('lowest_cost'));
+          lineB.addTo(polylinesLayer);
+
+          // Subtle intermediate waypoints
+          for (let i = 1; i < optB.waypoints.length - 1; i++) {
+            L.circleMarker(optB.waypoints[i], {
+              radius: 3,
+              color: '#0B1726',
+              fillColor: '#35B8A6',
+              fillOpacity: 0.75,
+              weight: 1,
+              interactive: false,
+            }).addTo(markersLayer);
+          }
+        }
+
+        // Chokepoints markers
+        for (const cp of CHOKEPOINTS) {
+          const cpIcon = L.divIcon({
+            className: '',
+            html: `<div style="
+              width: 8px; height: 8px;
+              background: #D97706;
+              transform: rotate(45deg);
+              border: 1px solid #0B1726;
+            "></div>`,
+            iconSize: [8, 8],
+            iconAnchor: [4, 4],
+          });
+
+          L.marker([cp.lat, cp.lng], { icon: cpIcon, interactive: true })
+            .bindPopup(
+              `<div style="font-family:Inter,sans-serif;font-size:11px;color:#E8F0F5;min-width:160px">
+                <div style="font-size:9px;color:#D97706;font-weight:700;text-transform:uppercase;margin-bottom:2px">Nautical Chokepoint</div>
+                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px">${cp.name}</div>
+                <div style="font-size:10px;color:#91A6B8">${cp.desc}</div>
+              </div>`,
+              { className: 'maritime-leaflet-popup' }
+            )
+            .addTo(markersLayer);
+        }
+
+        // Risk & Weather alert zones
+        if (alerts && alerts.length > 0) {
+          for (const alert of alerts) {
+            if (alert.coordinates && alert.coordinates.length === 2) {
+              const isCrit = alert.severity === 'CRITICAL';
+              const alertColor = isCrit ? '#DC2626' : '#D97706';
+              const radiusM = (alert.radius_nm || 90) * 1852;
+
+              L.circle(alert.coordinates, {
+                radius: radiusM,
+                color: alertColor,
+                fillColor: alertColor,
+                fillOpacity: isCrit ? 0.16 : 0.10,
+                weight: 1.5,
+                dashArray: '4 4',
+              })
+                .bindPopup(
+                  `<div style="font-family:Inter,sans-serif;font-size:11px;color:#E8F0F5;min-width:190px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                      <span style="font-size:9px;color:${alertColor};font-weight:700;text-transform:uppercase">${alert.severity} ALERT</span>
+                      <span style="font-size:9px;color:#91A6B8">${alert.source}</span>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px">${alert.area}</div>
+                    <div style="font-size:10px;color:#B0C4D8;margin-bottom:4px">${alert.description}</div>
+                    ${alert.recommended_action ? `<div style="font-size:9px;color:#91A6B8;border-top:1px solid #294154;padding-top:3px">Action: ${alert.recommended_action}</div>` : ''}
+                  </div>`,
+                  { className: 'maritime-leaflet-popup' }
+                )
+                .addTo(markersLayer);
+            }
+          }
+        }
+      } else {
+        // ─────────────────────────────────────────────────────────────────────
+        // Standard corridor overview mode (when no dual planning props)
+        // ─────────────────────────────────────────────────────────────────────
+
+        // 1. Secondary corridors — muted dashed lines
+        for (const [key, corr] of Object.entries(CORRIDOR_PATHS)) {
+          if (key === activeRouteKey) continue;
+
+          const line = L.polyline(corr.coords, {
+            color: '#5D9BC4',
+            weight: 1.5,
+            opacity: 0.30,
+            dashArray: '6 8',
+            lineCap: 'round',
+          });
+
+          line.bindTooltip(
+            `<div style="font-family:Inter,sans-serif;font-size:11px;padding:3px 6px">
+              <span style="color:#91A6B8;font-weight:600">${corr.from} → ${corr.to}</span>
+              <div style="color:#64748B;font-size:10px">${corr.distanceNm.toLocaleString()} nm · ${corr.avgTransitDays} days</div>
+            </div>`,
+            { sticky: true, opacity: 0.95, className: 'maritime-leaflet-tooltip' }
+          );
+          line.on('mouseover', function (this: any) {
+            this.setStyle({ opacity: 0.60, weight: 2.5 });
+          });
+          line.on('mouseout', function (this: any) {
+            this.setStyle({ opacity: 0.30, weight: 1.5 });
+          });
+          line.on('click', () => {
+            if (onSelectRoute) {
+              onSelectRoute({
+                id: corr.id,
+                origin: corr.from as any,
+                destination: corr.to as any,
+                avgFreightRate: 31.8,
+                transitTimeDays: corr.avgTransitDays,
+                avgTransitDays: corr.avgTransitDays,
+                distanceNm: corr.distanceNm,
+                portCongestionLevel: 'Low',
+                vesselAvailabilityCount: 5,
+                risk: 'LOW',
+                riskLevel: 'LOW',
+                estimatedLandedCostPerMt: 142.0,
+                isRecommended: false,
+                originCoords: corr.coords[0],
+                destCoords: corr.coords[corr.coords.length - 1],
+              });
+            }
+          });
+          line.addTo(polylinesLayer);
+        }
+
+        // 2. Selected corridor — restrained teal line
+        L.polyline(corridor.coords, {
+          color: '#35B8A6',
+          weight: 2.5,
+          opacity: 0.85,
+          dashArray: '10 6',
+          lineCap: 'round',
+          lineJoin: 'round',
+        })
+          .bindPopup(
+            `<div style="font-family:Inter,sans-serif;font-size:12px;color:#E8F0F5;min-width:190px;padding:2px 0">
+              <div style="font-size:10px;color:#35B8A6;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px">
+                Selected Corridor
+              </div>
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">
+                ${corridor.from} → ${corridor.to}
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div><div style="font-size:9px;color:#91A6B8">Transit</div>
+                  <div style="font-size:12px;font-weight:600;color:#E8F0F5">${corridor.avgTransitDays} days</div></div>
+                <div><div style="font-size:9px;color:#91A6B8">Distance</div>
+                  <div style="font-size:12px;font-weight:600;color:#E8F0F5">${corridor.distanceNm.toLocaleString()} nm</div></div>
+                <div style="grid-column:1/-1"><div style="font-size:9px;color:#91A6B8">Commodity</div>
+                  <div style="font-size:11px;font-weight:600;color:#E8F0F5">${corridor.commodity}</div></div>
+              </div>
+            </div>`,
+            { className: 'maritime-leaflet-popup' }
+          )
+          .bindTooltip(
+            `<div style="font-family:Inter,sans-serif;font-size:11px">
+              <span style="color:#35B8A6;font-weight:700">Active:</span> ${corridor.from} → ${corridor.to}
+              <div style="color:#91A6B8;font-size:10px">${corridor.distanceNm.toLocaleString()} nm · ${corridor.avgTransitDays} days</div>
+            </div>`,
+            { sticky: true, className: 'maritime-leaflet-tooltip' }
+          )
+          .addTo(polylinesLayer);
+
+        // Intermediate waypoints
+        for (let i = 1; i < corridor.coords.length - 1; i++) {
+          const pt = corridor.coords[i];
+          L.circleMarker(pt, {
+            radius: 3,
+            color: '#294154',
+            fillColor: '#35B8A6',
+            fillOpacity: 0.6,
+            weight: 1,
+            interactive: false,
+          }).addTo(markersLayer);
+        }
       }
 
       // 4. Region labels (non-interactive)
@@ -540,12 +748,19 @@ export default function MaritimeLeafletMap({
       }
 
       // 5. Port markers
-      const origCoord = corridor.coords[0];
-      const destCoord = corridor.coords[corridor.coords.length - 1];
+      const activeEndpoints = hasDualPlanning && routeComparison?.shortest?.waypoints?.length
+        ? {
+            orig: routeComparison.shortest.waypoints[0],
+            dest: routeComparison.shortest.waypoints[routeComparison.shortest.waypoints.length - 1],
+          }
+        : {
+            orig: corridor.coords[0],
+            dest: corridor.coords[corridor.coords.length - 1],
+          };
 
       for (const [, port] of Object.entries(MARITIME_PORTS)) {
-        const isOrigin = Math.abs(port.lat - origCoord[0]) < 1.5 && Math.abs(port.lng - origCoord[1]) < 1.5;
-        const isDest   = Math.abs(port.lat - destCoord[0]) < 1.5 && Math.abs(port.lng - destCoord[1]) < 1.5;
+        const isOrigin = Math.abs(port.lat - activeEndpoints.orig[0]) < 2.0 && Math.abs(port.lng - activeEndpoints.orig[1]) < 2.0;
+        const isDest   = Math.abs(port.lat - activeEndpoints.dest[0]) < 2.0 && Math.abs(port.lng - activeEndpoints.dest[1]) < 2.0;
 
         const dotColor =
           isDest ? '#6DAF91' :
@@ -562,7 +777,8 @@ export default function MaritimeLeafletMap({
             <div style="
               width:${dotSize}px;height:${dotSize}px;border-radius:50%;
               background:${dotColor};
-              border:1.5px solid #0B1726;
+              border:${isDest ? '2px solid #FFFFFF' : '1.5px solid #0B1726'};
+              box-shadow:${isDest ? '0 0 6px rgba(109,175,145,0.6)' : 'none'};
             "></div>
             <div style="
               position:absolute;
@@ -589,7 +805,7 @@ export default function MaritimeLeafletMap({
           .bindPopup(
             `<div style="font-family:Inter,sans-serif;font-size:12px;color:#E8F0F5;min-width:180px">
               <div style="font-size:10px;color:${dotColor};font-weight:700;text-transform:uppercase;margin-bottom:3px">
-                ${isDest ? 'Discharge Port' : isOrigin ? 'Load Port' : port.type === 'hub' ? 'Transit Hub' : 'Port'}
+                ${isDest ? 'Destination / Discharge Port' : isOrigin ? 'Origin / Load Port' : port.type === 'hub' ? 'Transit Hub' : 'Port'}
               </div>
               <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">${port.name}</div>
               <div style="font-size:10px;color:#91A6B8;margin-bottom:6px">${port.country} · ${port.lat.toFixed(4)}°N, ${port.lng.toFixed(4)}°E</div>
@@ -652,7 +868,7 @@ export default function MaritimeLeafletMap({
         vesselMarkersRef.current[v.id] = marker;
       }
     },
-    [activeRouteKey, liveVessels, onSelectRoute]
+    [activeRouteKey, liveVessels, onSelectRoute, routeComparison, selectedRouteKey, onSelectRouteKey, alerts]
   );
 
   // ─── Initialize Leaflet map (runs once on mount) ───────────────────────────
@@ -736,10 +952,24 @@ export default function MaritimeLeafletMap({
 
       renderMapEntities(L, map, polylinesLayerRef.current, markersLayerRef.current, activeCorridor);
 
-      const bounds = L.latLngBounds(activeCorridor.coords);
-      map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 6, duration: 0.9 });
+      if (routeComparison && (routeComparison.shortest || routeComparison.lowestCost)) {
+        const allPts: [number, number][] = [];
+        if (routeComparison.shortest?.waypoints?.length) {
+          allPts.push(...routeComparison.shortest.waypoints);
+        }
+        if (routeComparison.lowestCost?.waypoints?.length) {
+          allPts.push(...routeComparison.lowestCost.waypoints);
+        }
+        if (allPts.length > 0) {
+          const bounds = L.latLngBounds(allPts);
+          map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 6, duration: 0.8 });
+        }
+      } else {
+        const bounds = L.latLngBounds(activeCorridor.coords);
+        map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 6, duration: 0.9 });
+      }
     });
-  }, [activeRouteKey, activeCorridor, liveVessels, renderMapEntities]);
+  }, [activeRouteKey, activeCorridor, liveVessels, renderMapEntities, routeComparison, selectedRouteKey, alerts]);
 
   // ─── Map controls ──────────────────────────────────────────────────────────
   const handleZoomIn  = () => mapInstanceRef.current?.zoomIn();
@@ -860,8 +1090,48 @@ export default function MaritimeLeafletMap({
         </button>
       </div>
 
+      {/* Planning disclaimer banner — centered */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] hidden md:flex items-center gap-1.5 px-3 py-1 bg-[#102235]/95 border border-[#D6A24A]/40 rounded-full text-[10px] font-mono text-[#D6A24A] select-none shadow">
+        <ShieldAlert className="w-3 h-3 text-[#D6A24A] shrink-0" />
+        <span>Estimated planning corridor — not for navigation</span>
+      </div>
+
+      {/* Route options toggle badges if dual planning */}
+      {routeComparison && (routeComparison.shortest || routeComparison.lowestCost) && (
+        <div className="absolute top-14 left-3 z-[400] flex items-center gap-1.5 bg-[#102235]/95 border border-[#294154] rounded p-1 text-[10px] font-mono select-none">
+          {routeComparison.shortest && (
+            <button
+              type="button"
+              onClick={() => onSelectRouteKey?.('shortest')}
+              className={`px-2 py-1 rounded transition-colors flex items-center gap-1.5 cursor-pointer ${
+                selectedRouteKey === 'shortest' || (!selectedRouteKey && !routeComparison.lowestCost)
+                  ? 'bg-[#162C40] text-[#5D9BC4] border border-[#5D9BC4]/50 font-semibold'
+                  : 'text-[#91A6B8] hover:text-[#E8F0F5]'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#5D9BC4]" />
+              <span>Route A (Fastest)</span>
+            </button>
+          )}
+          {routeComparison.lowestCost && (
+            <button
+              type="button"
+              onClick={() => onSelectRouteKey?.('lowest_cost')}
+              className={`px-2 py-1 rounded transition-colors flex items-center gap-1.5 cursor-pointer ${
+                selectedRouteKey === 'lowest_cost'
+                  ? 'bg-[#162C40] text-[#35B8A6] border border-[#35B8A6]/50 font-semibold'
+                  : 'text-[#91A6B8] hover:text-[#E8F0F5]'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#35B8A6]" />
+              <span>Route B (Lowest Cost)</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* AIS unavailable notice (shown when no live vessel positions) */}
-      {aisDataStatus === 'unavailable' && liveVessels.length === 0 && (
+      {aisDataStatus === 'unavailable' && liveVessels.length === 0 && !routeComparison && (
         <div className="absolute top-14 left-3 z-[400] bg-[#102235]/95 border border-[#D6A24A]/30 rounded px-3 py-2 text-[11px] font-mono max-w-[240px] text-[#91A6B8]">
           <AlertCircle className="w-3 h-3 inline mr-1.5 text-[#D6A24A]" />
           No AIS position fixes received. Vessel markers are not displayed.
@@ -986,24 +1256,44 @@ export default function MaritimeLeafletMap({
 
       {/* Bottom legend */}
       <div className="absolute bottom-0 left-0 right-0 z-[400] flex flex-wrap items-center justify-between gap-2 px-4 py-2 bg-[#102235]/95 border-t border-[#294154] text-[10px] font-mono">
-        <div className="flex items-center flex-wrap gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 border-t-2 border-dashed border-[#35B8A6]" />
-            <span className="text-[#E8F0F5]">Selected Route</span>
+        {routeComparison && (routeComparison.shortest || routeComparison.lowestCost) ? (
+          <div className="flex items-center flex-wrap gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 border-t-2 border-[#5D9BC4]" />
+              <span className="text-[#E8F0F5]">Route A (Shortest)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 border-t-2 border-[#35B8A6]" />
+              <span className="text-[#E8F0F5]">Route B (Lowest Cost)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 bg-[#D97706] rotate-45 border border-[#0B1726]" />
+              <span className="text-[#91A6B8]">Chokepoint</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full border border-dashed border-[#D97706] bg-[#D97706]/20" />
+              <span className="text-[#91A6B8]">Alert Area</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 border-t border-dashed border-[#5D9BC4]/50" />
-            <span className="text-[#91A6B8]">Other Corridors</span>
+        ) : (
+          <div className="flex items-center flex-wrap gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 border-t-2 border-dashed border-[#35B8A6]" />
+              <span className="text-[#E8F0F5]">Selected Route</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 border-t border-dashed border-[#5D9BC4]/50" />
+              <span className="text-[#91A6B8]">Other Corridors</span>
+            </div>
+            <div className="hidden md:flex items-center gap-3 border-l border-[#294154] pl-3">
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#6DAF91]" /><span className="text-[#91A6B8]">Discharge</span></div>
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#35B8A6]" /><span className="text-[#91A6B8]">Origin</span></div>
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#91A6B8]" /><span className="text-[#91A6B8]">Hub</span></div>
+            </div>
           </div>
-          <div className="hidden md:flex items-center gap-3 border-l border-[#294154] pl-3">
-            <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#6DAF91]" /><span className="text-[#91A6B8]">Discharge</span></div>
-            <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#35B8A6]" /><span className="text-[#91A6B8]">Origin</span></div>
-            <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#91A6B8]" /><span className="text-[#91A6B8]">Hub</span></div>
-          </div>
-        </div>
-        <div className="text-[#91A6B8] hidden lg:block">
-          Active: <span className="text-[#E8F0F5] font-semibold">{activeCorridor.from} → {activeCorridor.to}</span>
-          &nbsp;·&nbsp;{activeCorridor.distanceNm.toLocaleString()} nm&nbsp;·&nbsp;{activeCorridor.avgTransitDays} days
+        )}
+        <div className="text-[#91A6B8] hidden lg:block text-[10px]">
+          <span className="text-[#D6A24A]">Estimated planning corridor — not for navigation</span>
         </div>
       </div>
     </div>

@@ -40,6 +40,42 @@ from schemas.planning import (
     LandedCostRequest,
     LandedCostResponse,
 )
+from schemas.route_planning import (
+    RouteCorridorItem,
+    RouteCompareRequest,
+    RouteCompareResponse,
+    RouteAlertItem,
+    RouteRiskAssessmentRequest,
+    RouteRiskAssessmentResponse,
+    BerthItem,
+    BerthAvailabilityRequest,
+    BerthAvailabilityResponse,
+    BerthBookingCreateRequest,
+    BerthBookingResponse,
+    AlternativePortRequest,
+    AlternativePortResponse,
+    FleetAllocationRequest,
+    FleetAllocationResponse,
+    CharterBookingCreateRequest,
+    CharterBookingRecord,
+    RescheduleRequest,
+    RescheduleResponse,
+    CancelBookingRequest,
+    CancelBookingResponse,
+)
+
+from services.route_engine import get_all_corridors, calculate_route_options
+from services.route_risk_service import evaluate_route_risk, get_alerts_for_route
+from services.berth_service import get_port_berths, check_berth_availability, book_berth
+from services.alternative_port_service import evaluate_alternative_ports
+from services.fleet_allotment_service import allocate_fleet_to_cargo
+from services.booking_service import (
+    create_charter_booking,
+    get_all_charter_bookings,
+    get_charter_booking_by_id,
+    reschedule_charter_booking,
+    cancel_charter_booking,
+)
 
 from services.freight_service import predict_freight, get_freight_model
 from services.demand_service import predict_demand, get_demand_model
@@ -167,10 +203,23 @@ async def root():
 @app.get("/health", tags=["System"])
 async def health_check():
     from services.chronos_service import is_chronos_available
+    from sqlalchemy import text
+    from db.database import engine
     freight_loaded = get_freight_model().model is not None
     demand_loaded = get_demand_model().model is not None
+
+    # Check PostgreSQL database connectivity
+    db_connected = False
+    try:
+        with engine.connect() as db_conn:
+            db_connected = bool(db_conn.execute(text("SELECT 1")).scalar())
+    except Exception as e:
+        logger.warning(f"Health check PostgreSQL probe failed: {e}")
+
     return {
-        "status": "ok",
+        "status": "ok" if db_connected else "degraded",
+        "database": "connected" if db_connected else "disconnected",
+        "database_dialect": engine.dialect.name,
         "models_loaded": freight_loaded and demand_loaded,
         "chronos_available": is_chronos_available(),
         "optimizer_available": True,
@@ -263,7 +312,7 @@ async def landed_cost_endpoint(payload: LandedCostRequest):
 
 @app.get("/api/v1/planning/history", tags=["SIH 26006 Planning"])
 async def get_planning_history_endpoint(limit: int = 10):
-    """Retrieves recent cargo planning runs persisted in SQLite database."""
+    """Retrieves recent cargo planning runs persisted in PostgreSQL database."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -412,6 +461,60 @@ async def simulate_endpoint(payload: SimulationRequest):
 async def get_routes_endpoint():
     """Returns route analytics, landed costs, and port coordinate pins."""
     return get_routes()
+
+
+@app.get("/api/v1/routes/corridors", response_model=List[RouteCorridorItem], tags=["Routes"])
+async def get_corridors_endpoint():
+    """Returns persistent catalog of verified dry-bulk shipping corridors to Indian East Coast."""
+    return get_all_corridors()
+
+
+@app.post("/api/v1/routes/compare", response_model=RouteCompareResponse, tags=["Routes"])
+async def compare_routes_endpoint(req: RouteCompareRequest):
+    """
+    Computes graph-based routing options:
+    - Option A: Shortest / fastest route minimizing distance and transit days.
+    - Option B: Lowest-cost eco-steaming route minimizing fuel consumption and demurrage.
+    """
+    try:
+        return calculate_route_options(
+            origin=req.origin,
+            destination=req.destination,
+            cargo_type=req.cargo_type,
+            cargo_quantity=req.cargo_quantity,
+            laycan_start=req.laycan_start,
+            required_arrival_date=req.required_arrival_date,
+            vessel_class=req.vessel_class,
+        )
+    except Exception as e:
+        logger.error(f"Error calculating route comparison: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to calculate route comparison: {str(e)}")
+
+
+@app.get("/api/v1/routes/{route_id}/alerts", response_model=List[RouteAlertItem], tags=["Routes"])
+async def get_route_alerts_endpoint(route_id: str):
+    """Returns active weather, coastal, and operational alerts for a specific route."""
+    return get_alerts_for_route(route_id)
+
+
+@app.post("/api/v1/routes/risk-assessment", response_model=RouteRiskAssessmentResponse, tags=["Routes"])
+async def route_risk_assessment_endpoint(req: RouteRiskAssessmentRequest):
+    """Evaluates dynamic risk score, cyclone alerts, and chokepoint delays along the corridor."""
+    return evaluate_route_risk(
+        origin=req.origin,
+        destination=req.destination,
+        travel_date=req.travel_date,
+    )
+
+
+@app.get("/api/v1/routes/{route_id}", response_model=RouteCorridorItem, tags=["Routes"])
+async def get_single_corridor_endpoint(route_id: str):
+    """Retrieves a single corridor configuration by ID."""
+    corridors = get_all_corridors()
+    for c in corridors:
+        if c.corridor_id.upper() == route_id.upper():
+            return c
+    raise HTTPException(status_code=404, detail=f"Corridor {route_id} not found.")
 
 
 # Analytics & Explainability Endpoints
@@ -605,6 +708,150 @@ async def get_port_endpoint(port_id: str):
 async def get_port_congestion_endpoint(port_id: str):
     """Returns port congestion metrics or explicit UNAVAILABLE state if live feed missing."""
     return get_port_congestion(port_id)
+
+
+@app.get("/api/v1/ports/{port_id}/berths", response_model=List[BerthItem], tags=["Ports"])
+async def get_port_berths_endpoint(port_id: str):
+    """Returns operational berths, drafts, equipment, and status for the requested port."""
+    return get_port_berths(port_id)
+
+
+@app.post("/api/v1/ports/{port_id}/berth-availability", response_model=BerthAvailabilityResponse, tags=["Ports"])
+async def check_berth_availability_endpoint(port_id: str, req: BerthAvailabilityRequest):
+    """
+    Checks berthing conflicts, maintenance slots, and available windows.
+    Enforces non-overlapping arrival/departure windows with 6-hour pilotage buffer.
+    """
+    try:
+        return check_berth_availability(
+            port_id=port_id,
+            requested_arrival=req.requested_arrival,
+            estimated_stay_hours=req.estimated_stay_hours,
+            vessel_dwt=req.vessel_dwt,
+            vessel_draft=req.vessel_draft,
+            vessel_id=req.vessel_id,
+        )
+    except Exception as e:
+        logger.error(f"Error checking berth availability: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/ports/{port_id}/berth-bookings", response_model=BerthBookingResponse, tags=["Ports"])
+async def book_berth_endpoint(port_id: str, req: BerthBookingCreateRequest):
+    """Reserves a berthing window. Rejects conflicting bookings."""
+    res = book_berth(
+        port_id=port_id,
+        berth_id=req.berth_id,
+        vessel_id=req.vessel_id,
+        arrival_time=req.arrival_time,
+        departure_time=req.departure_time,
+        cargo_plan_id=req.cargo_plan_id,
+        notes=req.notes,
+    )
+    if not res.success:
+        raise HTTPException(status_code=409, detail=res.message)
+    return res
+
+
+@app.post("/api/v1/ports/{port_id}/alternative-options", response_model=AlternativePortResponse, tags=["Ports"])
+async def evaluate_alternative_ports_endpoint(port_id: str, req: AlternativePortRequest):
+    """Evaluates alternative East Coast discharge ports when preferred port is congested or blocked."""
+    return evaluate_alternative_ports(
+        original_port=port_id,
+        cargo_quantity=req.cargo_quantity,
+        cargo_type=req.cargo_type,
+        vessel_draft=req.vessel_draft,
+        vessel_dwt=req.vessel_dwt,
+    )
+
+
+# ==============================================================================
+# Dynamic Fleet Allotment Endpoints
+# ==============================================================================
+@app.post("/api/v1/fleet/allocate", response_model=FleetAllocationResponse, tags=["Fleet"])
+async def allocate_fleet_endpoint(req: FleetAllocationRequest):
+    """
+    Optimizes fleet allotment: compares single large vessel vs multi-vessel parceling,
+    immediate charter vs +7d/+14d laycan delays, enforcing capacity, draft, and budget constraints.
+    """
+    try:
+        return allocate_fleet_to_cargo(
+            cargo_quantity=req.cargo_quantity,
+            cargo_type=req.cargo_type,
+            origin=req.origin,
+            destination=req.destination,
+            delivery_deadline=req.delivery_deadline,
+            maximum_budget=req.maximum_budget,
+            preferred_vessel_class=req.preferred_vessel_class,
+        )
+    except Exception as e:
+        logger.error(f"Error in fleet allocation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/fleet/availability", tags=["Fleet"])
+async def get_fleet_availability_endpoint():
+    """Returns candidate vessels with current status and East Coast port compatibility."""
+    return get_all_vessels()
+
+
+# ==============================================================================
+# Charter Booking & Rescheduling Lifecycle Endpoints
+# ==============================================================================
+@app.post("/api/v1/bookings", response_model=CharterBookingRecord, tags=["Bookings"])
+async def create_booking_endpoint(req: CharterBookingCreateRequest):
+    """Creates and confirms a charter booking. Enforces non-double-booking and budget constraints."""
+    try:
+        return create_charter_booking(req)
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error creating booking: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/bookings", response_model=List[CharterBookingRecord], tags=["Bookings"])
+async def list_bookings_endpoint():
+    """Returns all stored charter bookings across their lifecycle statuses."""
+    return get_all_charter_bookings()
+
+
+@app.get("/api/v1/bookings/{booking_id}", response_model=CharterBookingRecord, tags=["Bookings"])
+async def get_booking_endpoint(booking_id: str):
+    """Retrieves a single charter booking by ID."""
+    b = get_charter_booking_by_id(booking_id)
+    if not b:
+        raise HTTPException(status_code=404, detail=f"Booking {booking_id} not found.")
+    return b
+
+
+@app.post("/api/v1/bookings/{booking_id}/reschedule", response_model=RescheduleResponse, tags=["Bookings"])
+async def reschedule_booking_endpoint(booking_id: str, req: RescheduleRequest):
+    """
+    Evaluates rescheduling options (date shift, alternative port, alternative vessel).
+    Requires explicit user confirmation before committing changes to confirmed bookings.
+    """
+    try:
+        req.booking_id = booking_id
+        return reschedule_charter_booking(req)
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error rescheduling booking {booking_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/bookings/{booking_id}/cancel", response_model=CancelBookingResponse, tags=["Bookings"])
+async def cancel_booking_endpoint(booking_id: str, req: CancelBookingRequest):
+    """Cancels a booking and releases associated vessel and berth allocations."""
+    try:
+        req.booking_id = booking_id
+        return cancel_charter_booking(req)
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error cancelling booking {booking_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==============================================================================

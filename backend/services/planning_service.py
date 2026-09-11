@@ -53,11 +53,22 @@ def persist_planning_run(
 
         # 1. cargo_plans
         cursor.execute("""
-            INSERT OR REPLACE INTO cargo_plans (
+            INSERT INTO cargo_plans (
                 plan_id, cargo_type, cargo_quantity, origin, destination_port,
                 required_arrival_date, max_budget, preferred_vessel_class,
                 supplier_price_per_tonne, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (plan_id) DO UPDATE SET
+                cargo_type = EXCLUDED.cargo_type,
+                cargo_quantity = EXCLUDED.cargo_quantity,
+                origin = EXCLUDED.origin,
+                destination_port = EXCLUDED.destination_port,
+                required_arrival_date = EXCLUDED.required_arrival_date,
+                max_budget = EXCLUDED.max_budget,
+                preferred_vessel_class = EXCLUDED.preferred_vessel_class,
+                supplier_price_per_tonne = EXCLUDED.supplier_price_per_tonne,
+                status = EXCLUDED.status,
+                created_at = EXCLUDED.created_at
         """, (
             plan_id,
             req.cargo_type,
