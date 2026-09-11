@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { RouteMetric } from '@/types';
 import { Anchor, Compass, Eye, Maximize2, Navigation, Ship, ZoomIn, ZoomOut } from 'lucide-react';
+import { DataSourceBadge } from '@/components/ui/DataSourceBadge';
 import 'leaflet/dist/leaflet.css';
 
 // Type definitions
@@ -932,15 +933,14 @@ export default function MaritimeLeafletMap({
         {/* Panel Header */}
         <div className="px-3.5 py-2.5 bg-[#081220] border-b border-electric/20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs font-bold text-slate-100 tracking-wide">Live Vessels Near Route</span>
+            <Ship className="w-3.5 h-3.5 text-cyan" />
+            <span className="text-xs font-bold text-slate-100 tracking-wide">Vessels Near Route</span>
           </div>
-          <span className="text-[10px] text-cyan bg-cyan/10 border border-cyan/25 px-1.5 py-0.2 rounded font-bold">
-            {LIVE_VESSELS.length} Active
-          </span>
+          <DataSourceBadge
+            type="demo"
+            label="Demo Vessels"
+            tooltip="Deterministic benchmark vessels along corridor. Live AISStream key required for real-time AIS."
+          />
         </div>
 
         {/* Vessel List */}

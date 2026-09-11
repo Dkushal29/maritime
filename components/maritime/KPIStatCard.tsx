@@ -1,5 +1,6 @@
 import React from 'react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { DataSourceBadge, DataSourceType } from '@/components/ui/DataSourceBadge';
 
 export interface KPIStatCardProps {
   label: string;
@@ -10,6 +11,8 @@ export interface KPIStatCardProps {
   color?: string;
   sparkline?: number[];
   icon?: React.ReactNode;
+  dataSource?: DataSourceType;
+  dataSourceLabel?: string;
   onClick?: () => void;
 }
 
@@ -22,6 +25,8 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
   color = '#22D3EE',
   sparkline = [30, 31, 29, 32, 33, 31, 35],
   icon,
+  dataSource,
+  dataSourceLabel,
   onClick,
 }) => {
   const chartData = sparkline.map((v, i) => ({ v, i }));
@@ -34,16 +39,19 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
       }`}
       style={{ borderColor: `${color}25` }}
     >
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-start justify-between mb-2 gap-1 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {icon && <span className="text-sm opacity-80">{icon}</span>}
           <span className="text-[11px] font-mono text-slate-400 tracking-wider uppercase">
             {label}
           </span>
+          {dataSource && (
+            <DataSourceBadge type={dataSource} label={dataSourceLabel} />
+          )}
         </div>
         {trend && (
           <span
-            className="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold"
+            className="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold whitespace-nowrap"
             style={{
               color: isPositive ? '#10B981' : '#F59E0B',
               backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',

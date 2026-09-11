@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bell, AlertTriangle, Info, Check, ShieldAlert, Sparkles } from 'lucide-react';
 import { getAlerts } from '@/lib/api';
-import { mockAlerts } from '@/data/mockData';
 import { AlertItem } from '@/types';
 
 interface NotificationDropdownProps {
@@ -12,15 +11,29 @@ interface NotificationDropdownProps {
 }
 
 export default function NotificationDropdown({ onClose }: NotificationDropdownProps) {
-  const [alerts, setAlerts] = useState<AlertItem[]>(mockAlerts);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'All' | 'Critical' | 'Warning'>('All');
 
   useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
     getAlerts()
       .then((data) => {
-        if (data && data.length > 0) setAlerts(data);
+        if (!isMounted) return;
+        setAlerts(data || []);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!isMounted) return;
+        setAlerts([]);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const markAllRead = () => {
@@ -93,7 +106,20 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
 
       {/* List */}
       <div className="max-h-80 overflow-y-auto divide-y divide-electric/10">
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="p-5 space-y-4">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="animate-pulse space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="h-3.5 w-28 bg-slate-800 rounded"></div>
+                  <div className="h-2.5 w-12 bg-slate-800/60 rounded"></div>
+                </div>
+                <div className="h-2.5 w-full bg-slate-800/40 rounded"></div>
+                <div className="h-2.5 w-2/3 bg-slate-800/40 rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
           filtered.map((item) => {
             const rawSev = String(item.severity || item.category || '').toLowerCase();
             const isCrit = rawSev.includes('crit');

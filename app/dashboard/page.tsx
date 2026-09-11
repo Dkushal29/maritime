@@ -114,7 +114,7 @@ export default function DashboardPage() {
   // Real forward predictions from model pipeline
   const predVals = (forecast30d?.predictions || freight.predictions || []).slice(0, 6).map((p) => p.predicted);
 
-  const kpis = [
+  const kpis: (React.ComponentProps<typeof KPIStatCard>)[] = [
     {
       label: 'Freight Rate',
       value: `$${freight.currentRate.toFixed(1)}`,
@@ -122,6 +122,8 @@ export default function DashboardPage() {
       trend: `${freight.changePercent >= 0 ? '+' : ''}${freight.changePercent.toFixed(1)}%`,
       isPositive: false,
       color: '#22D3EE',
+      dataSource: 'model',
+      dataSourceLabel: 'Model',
       sparkline: [...histVals, freight.currentRate],
     },
     {
@@ -131,6 +133,8 @@ export default function DashboardPage() {
       trend: `Range $${(freight.uncertaintyRange?.lower ?? freight.predicted30dRate * 0.92).toFixed(1)}-$${(freight.uncertaintyRange?.upper ?? freight.predicted30dRate * 1.08).toFixed(1)}`,
       isPositive: false,
       color: '#1683FF',
+      dataSource: 'model',
+      dataSourceLabel: 'Forecast',
       sparkline: [freight.currentRate, ...predVals],
     },
     {
@@ -140,6 +144,8 @@ export default function DashboardPage() {
       trend: `${(cargoData.demandTrendPercent ?? 8.4) > 0 ? '+' : ''}${(cargoData.demandTrendPercent ?? 8.4).toFixed(1)}%`,
       isPositive: true,
       color: '#8B5CF6',
+      dataSource: 'model',
+      dataSourceLabel: 'Model',
       sparkline: (cargoData.demandTimeline && cargoData.demandTimeline.length > 0)
         ? cargoData.demandTimeline.map((t) => t.demand)
         : [140, 160, 185, 200, 215, (cargoData.projectedDemand ?? cargoData.expected30dDemand) / 1000],
@@ -151,6 +157,8 @@ export default function DashboardPage() {
       trend: cargoData.inventoryCoverageDays < 15 ? 'Alert' : 'Stable',
       isPositive: cargoData.inventoryCoverageDays >= 15,
       color: cargoData.inventoryCoverageDays < 15 ? '#F59E0B' : '#10B981',
+      dataSource: 'demo',
+      dataSourceLabel: 'Demo',
       sparkline: (cargoData.demandTimeline && cargoData.demandTimeline.length > 0)
         ? cargoData.demandTimeline.map((t) => Math.max(4, Math.round(t.inventory / 8)))
         : [22, 18, 16, 14, 12, cargoData.inventoryCoverageDays],
@@ -162,6 +170,8 @@ export default function DashboardPage() {
       trend: 'Min Cost',
       isPositive: true,
       color: '#10B981',
+      dataSource: 'model',
+      dataSourceLabel: 'MILP',
       sparkline: [
         +((recommendation.estimatedCharterCost / 1000000) * 1.08).toFixed(2),
         +((recommendation.estimatedCharterCost / 1000000) * 1.05).toFixed(2),
@@ -176,6 +186,8 @@ export default function DashboardPage() {
       trend: '87% Conf.',
       isPositive: true,
       color: '#10B981',
+      dataSource: 'model',
+      dataSourceLabel: 'Model',
       sparkline: [
         +((recommendation.expectedSavings / 1000) * 0.6).toFixed(0),
         +((recommendation.expectedSavings / 1000) * 0.8).toFixed(0),

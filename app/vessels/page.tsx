@@ -9,6 +9,7 @@ import { VesselCard } from '@/components/maritime/VesselCard';
 import { VesselStatus } from '@/components/maritime/VesselStatus';
 import { Drawer } from '@/components/ui/Drawer';
 import { PageHero } from '@/components/maritime/PageHero';
+import { DataSourceBadge } from '@/components/ui/DataSourceBadge';
 
 const VESSEL_TYPES = ['All', 'Panamax', 'Capesize', 'Supramax', 'Handysize'];
 const STATUS_OPTIONS = ['All', 'Available', 'At Sea', 'Booked', 'Maintenance'];
@@ -89,9 +90,16 @@ export default function VesselsPage() {
           <div className="text-[11px] text-cyan font-mono tracking-wider uppercase mb-1 font-bold">
             ◆ FLEET FILTERING & DIRECTORY
           </div>
-          <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-100 m-0">
-            Active Vessel Registry
-          </h2>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-100 m-0">
+              Active Vessel Registry
+            </h2>
+            <DataSourceBadge
+              type="demo"
+              label="Demo Fleet Database"
+              tooltip="Vessel particulars and baseline positions from benchmark dataset. Real-time tracking requires active AISStream connection."
+            />
+          </div>
           <p className="text-xs text-slate-400 mt-1">
             Filter by vessel class, deployment status, and cargo suitability.
           </p>

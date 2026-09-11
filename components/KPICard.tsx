@@ -4,6 +4,7 @@ import React from 'react';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line } from 'recharts';
 import { cn } from '@/lib/utils';
+import { DataSourceBadge, DataSourceType } from '@/components/ui/DataSourceBadge';
 
 interface KPICardProps {
   title: string;
@@ -16,6 +17,8 @@ interface KPICardProps {
   sparklineData?: { value: number }[];
   sparklineColor?: string;
   badgeColor?: string;
+  dataSource?: DataSourceType;
+  dataSourceLabel?: string;
 }
 
 export default function KPICard({
@@ -29,15 +32,22 @@ export default function KPICard({
   sparklineData,
   sparklineColor = '#06B6D4',
   badgeColor,
+  dataSource,
+  dataSourceLabel,
 }: KPICardProps) {
   return (
     <div className="relative flex flex-col justify-between p-4 bg-[#131C31] border border-[#1E293B] rounded-xl hover:border-slate-700 transition-all shadow-sm group">
       <div>
-        {/* Top bar: label + icon */}
+        {/* Top bar: label + badge + icon */}
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
-            {title}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+              {title}
+            </span>
+            {dataSource && (
+              <DataSourceBadge type={dataSource} label={dataSourceLabel} />
+            )}
+          </div>
           <div className="p-1.5 rounded-lg bg-[#0B1120] border border-[#1E293B] text-slate-300 group-hover:text-cyan-400 transition-colors">
             <Icon className="w-4 h-4" />
           </div>

@@ -3,7 +3,7 @@
     "name": "XGBoost Regressor",
     "version": "1.0",
     "data_mode": "DEMO",
-    "trained_at": "2026-09-10 22:01:46",
+    "trained_at": "2026-09-11 11:17:12",
     "training_period": "2018-01 - 2025-12",
     "test_period": "2026-01 - 2026-09",
     "feature_count": 16,
@@ -25,51 +25,51 @@
       "cargo_type",
       "vessel_type"
     ],
-    "mae": 0.888,
-    "rmse": 1.136,
-    "r2": 0.993,
-    "mape": 3.0,
-    "residual_std": 0.907,
+    "mae": 0.932,
+    "rmse": 1.201,
+    "r2": 0.992,
+    "mape": 3.14,
+    "residual_std": 0.979,
     "actual_vs_predicted": [
       {
         "date": "2026-01-01",
         "actual": 39.02,
-        "predicted": 38.01
+        "predicted": 38.57
       },
       {
         "date": "2026-01-01",
         "actual": 30.4,
-        "predicted": 29.39
+        "predicted": 29.55
       },
       {
         "date": "2026-02-01",
         "actual": 13.87,
-        "predicted": 13.07
+        "predicted": 12.65
       },
       {
         "date": "2026-02-01",
         "actual": 44.49,
-        "predicted": 43.65
+        "predicted": 43.16
       },
       {
         "date": "2026-03-01",
         "actual": 41.15,
-        "predicted": 41.96
+        "predicted": 41.94
       },
       {
         "date": "2026-04-01",
         "actual": 15.49,
-        "predicted": 14.87
+        "predicted": 14.48
       },
       {
         "date": "2026-04-01",
         "actual": 38.6,
-        "predicted": 37.05
+        "predicted": 36.79
       },
       {
         "date": "2026-05-01",
         "actual": 19.89,
-        "predicted": 19.68
+        "predicted": 19.96
       },
       {
         "date": "2026-06-01",
@@ -79,32 +79,32 @@
       {
         "date": "2026-06-01",
         "actual": 37.99,
-        "predicted": 36.78
+        "predicted": 36.42
       },
       {
         "date": "2026-07-01",
         "actual": 44.65,
-        "predicted": 43.82
+        "predicted": 44.4
       },
       {
         "date": "2026-08-01",
         "actual": 47.15,
-        "predicted": 46.82
+        "predicted": 45.86
       },
       {
         "date": "2026-08-01",
         "actual": 35.67,
-        "predicted": 35.72
+        "predicted": 35.57
       },
       {
         "date": "2026-09-01",
         "actual": 13.37,
-        "predicted": 13.11
+        "predicted": 13.13
       },
       {
         "date": "2026-09-01",
         "actual": 15.63,
-        "predicted": 15.74
+        "predicted": 16.26
       }
     ]
   },
@@ -112,7 +112,7 @@
     "name": "XGBoost Regressor",
     "version": "1.0",
     "data_mode": "DEMO",
-    "trained_at": "2026-09-10 22:01:46",
+    "trained_at": "2026-09-11 11:17:12",
     "training_period": "2018-01 - 2025-12",
     "test_period": "2026-01 - 2026-09",
     "feature_count": 11,
@@ -129,85 +129,85 @@
       "port",
       "cargo_type"
     ],
-    "mae": 7902.6,
-    "rmse": 9780.2,
-    "r2": 0.986,
-    "mape": 2.48,
+    "mae": 8196.3,
+    "rmse": 10403.4,
+    "r2": 0.984,
+    "mape": 2.54,
     "actual_vs_predicted": [
       {
         "date": "2026-01-01",
         "actual": 190278.0,
-        "predicted": 180747.0
+        "predicted": 181296.0
       },
       {
         "date": "2026-01-01",
         "actual": 419795.0,
-        "predicted": 392697.0
+        "predicted": 395011.0
       },
       {
         "date": "2026-02-01",
         "actual": 248666.0,
-        "predicted": 245696.0
+        "predicted": 246112.0
       },
       {
         "date": "2026-02-01",
         "actual": 316951.0,
-        "predicted": 299762.0
+        "predicted": 300464.0
       },
       {
         "date": "2026-03-01",
         "actual": 445915.0,
-        "predicted": 448993.0
+        "predicted": 455970.0
       },
       {
         "date": "2026-04-01",
         "actual": 266977.0,
-        "predicted": 271491.0
+        "predicted": 270561.0
       },
       {
         "date": "2026-04-01",
         "actual": 435204.0,
-        "predicted": 446737.0
+        "predicted": 436474.0
       },
       {
         "date": "2026-05-01",
         "actual": 273917.0,
-        "predicted": 264763.0
+        "predicted": 264301.0
       },
       {
         "date": "2026-06-01",
         "actual": 363838.0,
-        "predicted": 340798.0
+        "predicted": 344240.0
       },
       {
         "date": "2026-06-01",
         "actual": 389320.0,
-        "predicted": 379154.0
+        "predicted": 380928.0
       },
       {
         "date": "2026-07-01",
         "actual": 350672.0,
-        "predicted": 341137.0
+        "predicted": 345466.0
       },
       {
         "date": "2026-07-01",
         "actual": 464437.0,
-        "predicted": 450107.0
+        "predicted": 443613.0
       },
       {
         "date": "2026-08-01",
         "actual": 342814.0,
-        "predicted": 346615.0
+        "predicted": 342395.0
       },
       {
         "date": "2026-09-01",
         "actual": 291268.0,
-        "predicted": 292552.0
+        "predicted": 291331.0
       },
       {
         "date": "2026-09-01",
         "actual": 192153.0,
-        "predicted": 195043.0
+        "predicted": 195078.0
       }
     ]
   }

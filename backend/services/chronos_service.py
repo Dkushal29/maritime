@@ -34,6 +34,12 @@ def get_chronos_pipeline():
     if _load_attempted and _load_error is not None:
         return None
 
+    if os.getenv("ENABLE_CHRONOS", "false").lower() in ("false", "0", "no"):
+        _load_attempted = True
+        _load_error = "Chronos disabled via ENABLE_CHRONOS; using XGBoost mode"
+        logger.info("Chronos forecasting is disabled (ENABLE_CHRONOS=false). Using XGBoost forecasting.")
+        return None
+
     _load_attempted = True
     try:
         import torch

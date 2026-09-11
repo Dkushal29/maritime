@@ -1,10 +1,40 @@
 """
 Alert generation service monitoring market thresholds and operational conditions.
+Computes real timestamps based on when alerts were evaluated/generated.
 """
 from typing import List, Dict, Any
+from datetime import datetime, timezone
 from .freight_service import predict_freight
 from .demand_service import predict_demand
 from .vessel_service import get_all_vessels
+
+# Global registry tracking the real generation time for each alert ID
+_ALERT_GENERATION_TIMESTAMPS: Dict[str, datetime] = {}
+
+
+def _get_alert_timestamp(alert_id: str) -> str:
+    """
+    Computes a human-readable relative time string dynamically from the actual
+    timestamp when the alert condition was evaluated.
+    """
+    now = datetime.now(timezone.utc)
+    if alert_id not in _ALERT_GENERATION_TIMESTAMPS:
+        _ALERT_GENERATION_TIMESTAMPS[alert_id] = now
+
+    created_at = _ALERT_GENERATION_TIMESTAMPS[alert_id]
+    elapsed_seconds = max(0, int((now - created_at).total_seconds()))
+
+    if elapsed_seconds < 60:
+        return "Just now"
+    elif elapsed_seconds < 3600:
+        mins = elapsed_seconds // 60
+        return f"{mins} min{'s' if mins != 1 else ''} ago"
+    elif elapsed_seconds < 86400:
+        hours = elapsed_seconds // 3600
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    else:
+        days = elapsed_seconds // 86400
+        return f"{days} day{'s' if days != 1 else ''} ago"
 
 
 def generate_alerts() -> List[Dict[str, Any]]:
@@ -27,7 +57,7 @@ def generate_alerts() -> List[Dict[str, Any]]:
         "category": "Critical",
         "severity": "critical",
         "description": f"XGBoost model forecasts +{change_pct:.1f}% rate increase over 30 days on Australia → Visakhapatnam (reaching ${proj_rate:.1f}/MT).",
-        "timestamp": "12 mins ago",
+        "timestamp": _get_alert_timestamp("ALT-001"),
         "recommended_action": "Execute vessel fixture within 7 days to preserve $420,000 cost avoidance margin.",
         "read": False,
         "route": "Australia → Visakhapatnam"
@@ -50,7 +80,7 @@ def generate_alerts() -> List[Dict[str, Any]]:
         "category": "Warning",
         "severity": "warning",
         "description": f"Terminal coal stockpile ({cur_inv:,} MT) has dropped to {cov_days} days coverage against 30-day requirement of {fc_dem:,} MT.",
-        "timestamp": "1 hour ago",
+        "timestamp": _get_alert_timestamp("ALT-002"),
         "recommended_action": f"Issue purchase order for {proc_req:,} MT coking coal to safeguard blast furnace feed.",
         "read": False,
         "route": "Visakhapatnam Port"
@@ -71,7 +101,7 @@ def generate_alerts() -> List[Dict[str, Any]]:
         "category": "Warning",
         "severity": "warning",
         "description": f"Only {vessel_cnt} Tier-1 Panamax bulkers remain uncommitted in the Bay of Bengal for late September laycans.",
-        "timestamp": "3 hours ago",
+        "timestamp": _get_alert_timestamp("ALT-003"),
         "recommended_action": "Prioritize MV Ocean Star (IMO 9741234) and MV Southern Cross before spot fixtures close.",
         "read": True,
         "route": "Bay of Bengal"
@@ -85,7 +115,7 @@ def generate_alerts() -> List[Dict[str, Any]]:
         "category": "Opportunity",
         "severity": "opportunity",
         "description": "Paradip discharge freight rate is currently $30.9/MT ($0.9/MT lower than Visakhapatnam) with low waiting congestion.",
-        "timestamp": "5 hours ago",
+        "timestamp": _get_alert_timestamp("ALT-004"),
         "recommended_action": "Evaluate raking logistics from Paradip to regional secondary processing plants.",
         "read": True,
         "route": "Australia → Paradip"
@@ -99,7 +129,7 @@ def generate_alerts() -> List[Dict[str, Any]]:
         "category": "Information",
         "severity": "info",
         "description": "Southwest monsoon swell active in Malacca Strait. Transit speeds reduced by ~1.2 knots for laden Panamax vessels.",
-        "timestamp": "7 hours ago",
+        "timestamp": _get_alert_timestamp("ALT-005"),
         "recommended_action": "Factor +0.8 transit days buffer into laycan scheduling for Singapore-transiting bulkers.",
         "read": True,
         "route": "Malacca Strait → East Coast India"
