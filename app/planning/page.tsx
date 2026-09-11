@@ -865,9 +865,9 @@ export default function PlanningPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#E8F0F5] flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#35B8A6]" />
-              Recent Cargo Planning Fixtures (SQLite Database)
+              Recent Cargo Planning Fixtures (PostgreSQL Database)
             </h3>
-            <span className="text-xs text-[#91A6B8] font-mono">Persisted in maritime_live.db</span>
+            <span className="text-xs text-[#91A6B8] font-mono">Persisted in PostgreSQL</span>
           </div>
 
           <div className="overflow-x-auto">

@@ -42,12 +42,18 @@ if DATABASE_URL.startswith("postgresql://"):
 elif DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 
-# SQLAlchemy 2.0 PostgreSQL Engine
+# Ensure SSL mode for Neon serverless connection strings if omitted
+if "neon.tech" in DATABASE_URL and "sslmode" not in DATABASE_URL:
+    sep = "&" if "?" in DATABASE_URL else "?"
+    DATABASE_URL = f"{DATABASE_URL}{sep}sslmode=require"
+
+# SQLAlchemy 2.0 PostgreSQL Engine with serverless connection pooling & auto-recycle
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    pool_recycle=int(os.getenv("DB_POOL_RECYCLE", "300")),
+    pool_size=int(os.getenv("DB_POOL_SIZE", "10")),
+    max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "20")),
     future=True
 )
 

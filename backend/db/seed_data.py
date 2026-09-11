@@ -205,14 +205,13 @@ def migrate_from_sqlite():
                     ON CONFLICT DO NOTHING
                 """)
 
-                migrated_cnt = 0
-                for r in rows:
-                    row_dict = dict(r)
-                    pg_conn.execute(insert_sql, row_dict)
-                    migrated_cnt += 1
-
-                pg_conn.commit()
-                logger.info(f"Migrated {migrated_cnt} rows for table '{t}' from SQLite to PostgreSQL.")
+                if rows:
+                    payload = [dict(r) for r in rows]
+                    pg_conn.execute(insert_sql, payload)
+                    pg_conn.commit()
+                    logger.info(f"Migrated {len(rows)} rows for table '{t}' from SQLite to PostgreSQL.")
+                else:
+                    logger.info(f"Table '{t}' has 0 rows in SQLite.")
         except Exception as e:
             logger.warning(f"Table '{t}' migration notice: {e}")
 
