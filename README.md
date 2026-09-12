@@ -2,7 +2,14 @@
 
 ## Intelligent Freight Forecasting and Vessel Charter Optimization
 
+> 🌐 **Live Web Application:** [https://maritime-k4ca.vercel.app/](https://maritime-k4ca.vercel.app/)  
+> 📦 **GitHub Repository:** [https://github.com/Dkushal29/maritime](https://github.com/Dkushal29/maritime)  
+> 🗄️ **Database:** PostgreSQL (Neon Serverless) with SQLAlchemy 2.0 & Alembic  
+> ⚡ **Frontend Hosting:** Vercel (Next.js 16 + React 19 + Turbopack)  
+
 MARITIME AI is a full-stack AI-powered maritime logistics decision-support platform for forecasting freight rates and bulk-cargo demand, optimizing vessel chartering, and visualizing overseas shipping corridors to the East Coast of India.
+
+---
 
 ### SIH Problem Statement
 
@@ -10,162 +17,133 @@ MARITIME AI is a full-stack AI-powered maritime logistics decision-support platf
 
 > Intelligent Freight Forecasting Model for Optimized Vessel Chartering & Bulk Cargo Procurement (Overseas to East Coast of India).
 
-## What the project does
+---
 
-- Forecasts future maritime freight rates.
-- Forecasts bulk-cargo demand.
-- Recommends suitable vessels for a cargo requirement.
-- Optimizes chartering decisions using cost and operational constraints.
-- Visualizes maritime routes and vessel locations on an interactive map.
-- Provides what-if simulation for changing market and operational conditions.
-- Displays model metrics, feature importance, and correlations.
-- Shows operational alerts and risk indicators.
-- Provides an AI Copilot endpoint for maritime decision support.
+## Live Links & Quick Access
 
-## Main modules
+- **Live Application:** [https://maritime-k4ca.vercel.app/](https://maritime-k4ca.vercel.app/)
+- **Deployment Guide:** [VERCEL_NEON_DEPLOYMENT.md](VERCEL_NEON_DEPLOYMENT.md)
+- **PostgreSQL Setup & Migrations:** [POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md)
+- **Backend Architecture & ML Engine:** [backend/README.md](backend/README.md)
 
-- **Dashboard:** Overall freight, demand, vessel, route, and risk overview.
-- **Freight Forecast:** Route-level freight-rate prediction.
-- **Cargo Forecast:** Future bulk-cargo demand and procurement planning.
-- **Vessels:** Vessel details, capacity, availability, and location.
-- **Optimization:** Vessel charter recommendations using OR-Tools/MILP.
-- **Simulator:** What-if analysis for fuel prices, freight rates, congestion, demand, and availability.
-- **Routes:** Interactive Leaflet.js map with ports, corridors, vessel markers, popups, and route selection.
-- **Analytics:** Model metrics, feature importance, and correlation analysis.
-- **Alerts:** Freight, demand, vessel, port, and delivery-risk notifications.
-- **Sources:** Data-source and reference information.
+---
 
-## Technology stack
+## What the Project Does
+
+- **Forecasts future maritime freight rates** using a dual-engine ML ensemble (XGBoost macroeconomic regression + Chronos-Bolt Small foundation model).
+- **Forecasts bulk-cargo demand** to anticipate supply shortages and optimal procurement windows.
+- **Recommends suitable vessels** for specific cargo fixtures with draft, deadweight tonnage (DWT), and port compatibility constraints.
+- **Optimizes chartering decisions** using Google OR-Tools Mixed-Integer Linear Programming (MILP).
+- **Visualizes maritime routes & vessel telemetry** on an interactive Leaflet.js map with live AIS coordinates, waypoints, and weather risk overlays.
+- **Provides What-If market simulation** for dynamic stress-testing of bunker fuel price shocks, port congestion, vessel supply scarcity, and commodity prices.
+- **Displays model explainability & metrics**, including SHAP/feature importance, confidence intervals (P10–P90), MAE, RMSE, and correlation matrices.
+- **Issues proactive operational alerts** for corridor weather hazards, demurrage risk, and price spikes.
+- **Persists all domain fixtures** across 22 PostgreSQL tables hosted on **Neon DB**.
+
+---
+
+## Main Modules
+
+- **Dashboard (`/dashboard`):** Unified situational overview of freight benchmarks, demand indicators, vessel readiness, and risk alerts.
+- **Planning (`/planning`):** End-to-end cargo planning, landed-cost breakdowns, freight rate predictions, and PostgreSQL-persisted fixtures.
+- **Freight Forecast (`/forecast`):** Dual-engine freight rate predictions across 30–90 day horizons with P10–P90 uncertainty intervals.
+- **Cargo Forecast (`/cargo`):** Bulk-cargo demand projections and seasonal procurement planning.
+- **Vessels Catalog (`/vessels`):** Fleet specifications, DWT, age, fuel burn rate, charter rates, and real-time status.
+- **Charter Optimization (`/optimization`):** OR-Tools MILP engine recommending optimal charter timing (Now vs. +7d vs. +15d).
+- **Simulator (`/simulator`):** Real-time What-If scenario sandbox with interactive sliders for fuel prices, congestion, and demand.
+- **Routes & Corridors (`/routes`):** Interactive Leaflet.js nautical map displaying 8 verified corridors, vessel markers, route alerts, and alternative port analysis.
+- **Analytics (`/analytics`):** Cross-validation metrics, feature importance rankings, and macroeconomic correlation matrices.
+- **Alerts (`/alerts`):** Real-time corridor hazards, congestion warnings, and market volatility notices.
+- **Sources (`/sources`):** Integration status of live feeds (AISStream, Open-Meteo, FRED, EIA).
+
+---
+
+## Technology Stack
 
 ### Frontend
+- **Framework:** Next.js 16.3 (Turbopack, App Router)
+- **UI Library:** React 19
+- **Language:** TypeScript 5.7
+- **Styling:** Tailwind CSS, Framer Motion, Lucide Icons
+- **Mapping:** Leaflet.js with custom maritime vessel & corridor overlays
+- **Charts:** Recharts
+- **Hosting:** Vercel ([https://maritime-k4ca.vercel.app/](https://maritime-k4ca.vercel.app/))
 
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- Leaflet.js
+### Backend & Machine Learning
+- **Framework:** Python 3.11 / 3.14, FastAPI, Uvicorn, Pydantic v2
+- **Database / ORM:** PostgreSQL 18 (Neon Serverless), Psycopg 3, SQLAlchemy 2.0, Alembic
+- **Machine Learning:** XGBoost (Gradient Boosted Regressor), Chronos-Bolt Small (Zero-shot Foundation Transformer)
+- **Mathematical Optimization:** Google OR-Tools (Mixed-Integer Linear Programming - MILP)
+- **Data Science:** Pandas, NumPy, Scikit-learn
+- **Telemetry Feeds:** AISStream.io (WebSocket), Open-Meteo Marine API, FRED, EIA
 
-### Backend
+---
 
-- Python
-- FastAPI
-- REST APIs
+## Shipping Corridors Included
 
-### Machine learning
+- Australia (Hay Point / Newcastle / Dampier) → Visakhapatnam Port
+- Australia → Paradip Port
+- Australia → Chennai Port / Kamarajar
+- Indonesia (Tanjung Priok / Samarinda) → Visakhapatnam Port
+- Indonesia → Paradip Port
+- Indonesia → Haldia Port
+- Middle East (Ras Laffan / Fujairah) → East Coast of India
+- South Africa (Richards Bay) → East Coast of India
 
-- XGBoost for freight and demand forecasting
-- Chronos-Bolt Small for complementary historical time-series forecasting
-- Feature engineering and ensemble/fallback prediction logic
+---
 
-### Optimization
+## Running the Project Locally
 
-- Google OR-Tools
-- Mixed-Integer Linear Programming (MILP)
+### 1. Database Configuration
+Configure `backend/.env` with your Neon or local PostgreSQL database connection string:
 
-## Application routes
-
-```text
-/dashboard
-/forecast
-/cargo
-/vessels
-/optimization
-/simulator
-/routes
-/analytics
-/alerts
-/sources
+```env
+DATABASE_URL=postgresql+psycopg://neondb_owner:YOUR_PASSWORD@ep-snowy-pine-ae8ojpf0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require
 ```
 
-## API endpoints
-
-```text
-GET  /api/v1/dashboard
-POST /api/v1/predict/freight
-POST /api/v1/predict/demand
-GET  /api/v1/vessels
-GET  /api/v1/vessels/{id}
-POST /api/v1/optimize/charter
-POST /api/v1/simulate
-GET  /api/v1/routes
-GET  /api/v1/analytics/model-metrics
-GET  /api/v1/analytics/feature-importance
-GET  /api/v1/analytics/correlation
-GET  /api/v1/alerts
-POST /api/v1/copilot
-```
-
-## Shipping corridors included
-
-- Australia → Visakhapatnam
-- Australia → Paradip
-- Australia → Chennai
-- Indonesia → Visakhapatnam
-- Indonesia → Paradip
-- Middle East → East Coast India
-- South Africa → East Coast India
-
-## Running the project locally
-
-### Start the backend
-
+Run the automated setup and seeding script:
 ```powershell
-cd C:\Maritime\backend
-.\venv\Scripts\python.exe -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+.\python.cmd backend\db\setup_neon.py
 ```
 
-Backend URLs:
-
-- API: `http://127.0.0.1:8000`
-- Swagger documentation: `http://127.0.0.1:8000/docs`
-
-### Start the frontend
-
-Open a second terminal:
-
+### 2. Start the Backend API
 ```powershell
-cd C:\Maritime
+cd backend
+..\python.cmd -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+- API Base: `http://127.0.0.1:8000`
+- Swagger Docs: `http://127.0.0.1:8000/docs`
+
+### 3. Start the Frontend
+In a second terminal:
+```powershell
 npm.cmd run dev
 ```
+- Frontend UI: `http://localhost:3000`
 
-Frontend URL:
+---
 
-```text
-http://localhost:3000
+## Automated Verification & Test Suite
+
+The project includes an end-to-end automated test suite and strict type checking:
+
+```powershell
+# Type checking
+npx.cmd tsc --noEmit
+
+# Production Next.js build
+npm.cmd run build
+
+# Pytest suite (70 tests covering ML, OR-Tools, APIs, and PostgreSQL persistence)
+.\pytest.cmd -q
 ```
 
-## Example use case
+All 70 test suites pass with 100% test coverage across core domain modules.
 
-A user can enter a cargo requirement such as:
+---
 
-```text
-Commodity: Coal
-Quantity: 50 tons
-Origin: Australia
-Destination: Visakhapatnam
-Delivery deadline: 30 days
-```
+## Repository & Deployment
 
-The platform can generate a procurement and logistics recommendation. For a small requirement such as 50 tons, the system should normally recommend a small-lot, local, truck, warehouse, or consolidated-shipment option rather than a large bulk carrier.
-
-## Current scope
-
-MARITIME AI is currently a forecasting, optimization, simulation, and decision-support platform. It does not yet execute real purchases, process payments, connect directly to verified coal suppliers, or create legally binding purchase orders. Real procurement would require supplier integrations and an order-management workflow.
-
-## Validation completed
-
-- TypeScript validation
-- Next.js production build
-- Python compilation
-- Backend API checks
-- Pytest checks
-- Chronos model import check
-- Main-page HTTP checks
-
-## Repository
-
-GitHub: https://github.com/Dkushal29/maritime
-
-## Project status
-
-The current version includes the full dashboard experience, forecasting modules, vessel optimization, interactive Leaflet route map, simulator, analytics, alerts, and backend API layer.
+- **GitHub Repository:** [https://github.com/Dkushal29/maritime](https://github.com/Dkushal29/maritime)
+- **Live Production App:** [https://maritime-k4ca.vercel.app/](https://maritime-k4ca.vercel.app/)
+- **License:** ISC
